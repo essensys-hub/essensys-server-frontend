@@ -1,73 +1,68 @@
-# React + TypeScript + Vite
+# Essensys Server Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Ce projet est une réécriture moderne en **React + TypeScript + Vite** de l'interface web "Legacy" du serveur domotique Essensys. Il remplace l'ancienne interface basée sur jQuery.
 
-Currently, two official plugins are available:
+## Fonctionnalités
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Le tableau de bord permet de contrôler les éléments suivants via des appels API au backend existant :
 
-## React Compiler
+- **Éclairages** : Gestion des lumières par zone (Principaux, Indirects) avec retour d'état visuel.
+- **Chauffage** : Contrôle des modes (Confort, Éco, Hors gel, etc.) pour différentes zones (Jour, Nuit, SDB).
+- **Volets** : Ouverture et fermeture centralisée ou individuelle.
+- **Alarme** : Activation/Désactivation et statut.
+- **Arrosage & Cumulus** : Contrôles dédiés.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Structure du Projet
 
-## Expanding the ESLint configuration
+- `essensys-web-react/` : Le code source de l'application React.
+  - `src/components/Dashboard/` : Composants UI pour chaque fonctionnalité (LightingControl, HeatingControl, etc.).
+  - `src/services/legacyApi.ts` : Service gérant la communication avec le backend (Injections d'actions).
+  - `vite.config.ts` : Configuration de Vite, incluant le **proxy** vers le backend.
+- `test/` : Scripts Python pour le reverse engineering et la validation des API.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Prérequis
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Node.js** (version 18 ou supérieure recommandée)
+- **npm**
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Installation et Démarrage
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Le projet frontend se trouve dans le dossier `essensys-web-react`.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+1. **Naviguer dans le dossier du projet :**
+   ```bash
+   cd essensys-web-react
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+2. **Installer les dépendances :**
+   ```bash
+   npm install
+   ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+3. **Lancer le serveur de développement :**
+   ```bash
+   npm run dev
+   ```
+   L'application sera accessible sur `http://localhost:5173`.
+
+4. **Construire pour la production :**
+   ```bash
+   npm run build
+   ```
+   Les fichiers compilés seront dans le dossier `dist/`.
+
+## Configuration du Backend (Proxy)
+
+Le serveur de développement Vite est configuré pour rediriger les appels API (`/api/*`) vers le backend local tournant sur le port **80** (`http://127.0.0.1:80`).
+
+> [!IMPORTANT]
+> Une correction a été appliquée dans `vite.config.ts` (utilisation de `body-parser`) pour forcer l'envoi du header `Content-Length`. Cela corrige l'erreur `400 Bad Request` renvoyée par le backend qui ne supporte pas le `Transfer-Encoding: chunked`.
+
+## Tests et Debugging
+
+Des scripts Python sont disponibles dans le dossier `test/` pour vérifier le comportement du backend indépendamment du frontend :
+
+```bash
+# Exemple de test d'injection d'action
+python3 test/test_degamenet2.py
 ```
