@@ -183,16 +183,16 @@ export const BackendConfig: React.FC = () => {
 export const getBackendUrl = (): string => {
     // Si on est sur le même serveur (même hostname), utiliser une URL relative
     // Le navigateur utilisera automatiquement le même port que le frontend
-    // Nginx sur le port 9090 proxy les requêtes /api/ vers le backend
+    // Nginx sur le port 80 proxy les requêtes /api/ vers le backend sur 8080
     const currentHost = window.location.hostname;
     const savedDns = localStorage.getItem('essensys_backend_dns') || DEFAULT_DNS;
     
-    // Si le DNS configuré correspond au hostname actuel, utiliser le même serveur
+    // Si le DNS configuré correspond au hostname actuel, utiliser une URL relative
+    // Cela permet à nginx de proxy /api/ vers le backend
     if (currentHost === savedDns || currentHost === 'localhost' || currentHost === '127.0.0.1') {
-        // Utiliser le même hostname et port que le frontend
-        // Nginx sur le port 9090 a un proxy /api/ vers le backend
-        const port = window.location.port ? `:${window.location.port}` : '';
-        return `${window.location.protocol}//${currentHost}${port}`;
+        // Utiliser une URL relative pour que nginx proxy /api/ vers le backend
+        // Nginx sur le port 80 a un proxy /api/ vers le backend sur 8080
+        return ''; // URL vide = URL relative, nginx proxy /api/ vers backend
     }
     
     // Sinon, utiliser la configuration sauvegardée
