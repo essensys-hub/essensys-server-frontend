@@ -7,6 +7,7 @@ import { SprinklerControl } from './components/Dashboard/SprinklerControl';
 import { ShutterControl, shutterItems } from './components/Dashboard/ShutterControl'; // Import items for mapping
 import { LightingControl, mainLights, indirectLights } from './components/Dashboard/LightingControl';
 import { NotificationControl } from './components/Dashboard/NotificationControl';
+import { BackendConfig } from './components/Dashboard/BackendConfig';
 import { DashboardProvider, useDashboard } from './context/DashboardContext';
 import { buildLegacyPayload, sendBatchInjections } from './services/legacyApi';
 
@@ -45,14 +46,26 @@ const DashboardContent: React.FC = () => {
 
     // 1. Build legacy payload (for debug/completeness)
     const payload = buildLegacyPayload(state, allMappings);
-    console.log('Constructed Payload:', payload);
-
+    
+    // Afficher les valeurs demandées à l'utilisateur
+    console.log('========================================');
+    console.log('[VALIDATION] Valeurs demandées à l\'utilisateur:');
+    console.log('========================================');
+    console.log('État du dashboard:', state);
+    console.log('Payload construit:', payload);
+    console.log('Mappings utilisés:', allMappings);
+    
     // 2. Send injections to backend (New Requirement)
     try {
       await sendBatchInjections(state, allMappings);
+      console.log('========================================');
+      console.log('[VALIDATION] Validation terminée avec succès');
+      console.log('========================================');
       alert('Validation effectuée. Actions envoyées au serveur.');
     } catch (e) {
-      console.error("Erreur lors de l'envoi des actions:", e);
+      console.error('========================================');
+      console.error('[VALIDATION] Erreur lors de l\'envoi des actions:', e);
+      console.error('========================================');
       alert("Erreur lors de l'envoi.");
     }
   };
@@ -63,22 +76,26 @@ const DashboardContent: React.FC = () => {
 
   return (
     <Layout>
+      <BackendConfig />
+      
       <div className="es-mainaction">
         <input
           type="button"
           id="esys-undo"
-          style={{ float: 'left', marginLeft: '26px' }}
+          style={{ float: 'left', marginLeft: '26px', opacity: 0.5, cursor: 'not-allowed' }}
           value="Annulation"
           className="float-left"
           onClick={handleUndo}
+          disabled
         />
         <input
           type="button"
           id="esys-valid"
-          style={{ float: 'left' }}
+          style={{ float: 'left', opacity: 0.5, cursor: 'not-allowed' }}
           value="Validation"
           className="float-left"
           onClick={handleValidation}
+          disabled
         />
         <div className="esys-undoinfotop">et déconnexion</div>
         <div
@@ -133,10 +150,11 @@ const DashboardContent: React.FC = () => {
         <input
           type="button"
           id="esys-undo2"
-          style={{ float: 'left', marginLeft: '26px' }}
+          style={{ float: 'left', marginLeft: '26px', opacity: 0.5, cursor: 'not-allowed' }}
           value="Annulation"
           className="float-left"
           onClick={handleUndo}
+          disabled
         />
         <input
           type="button"

@@ -1,4 +1,5 @@
 import type { DashboardState } from '../context/DashboardContext';
+import { getBackendUrl } from '../components/Dashboard/BackendConfig';
 
 // Types for the configuration of components that need to be mapped to dindex/dvalue
 export interface LegacyMapping {
@@ -27,9 +28,16 @@ interface InjectionAction {
 }
 
 export const sendInjection = async (k: number, v: string): Promise<void> => {
-    console.log(`[Frontend] Sending injection to backend: k=${k}, v=${v}`);
+    const backendUrl = getBackendUrl();
+    const apiUrl = `${backendUrl}/api/admin/inject`;
+    
+    console.log('----------------------------------------');
+    console.log(`[INJECTION] DNS appelé: ${backendUrl}`);
+    console.log(`[INJECTION] URL complète: ${apiUrl}`);
+    console.log(`[INJECTION] Valeurs: k=${k}, v=${v}`);
+    
     try {
-        const response = await fetch('/api/admin/inject', {
+        const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -37,18 +45,38 @@ export const sendInjection = async (k: number, v: string): Promise<void> => {
             body: JSON.stringify({ k, v: String(v) }),
         });
 
+        // Afficher le code retour du backend
+        console.log(`[INJECTION] Code retour du backend: ${response.status} ${response.statusText}`);
+        
         if (!response.ok) {
-            console.error(`Failed to inject action k=${k}, v=${v}: ${response.statusText}`);
+            console.error(`[INJECTION] Échec de l'injection k=${k}, v=${v}: ${response.status} ${response.statusText}`);
+            const errorText = await response.text().catch(() => '');
+            console.error(`[INJECTION] Détails de l'erreur:`, errorText);
         } else {
-            console.log(`Successfully injected action k=${k}, v=${v}`);
+            const responseData = await response.json().catch(() => null);
+            console.log(`[INJECTION] Injection réussie k=${k}, v=${v}`);
+            if (responseData) {
+                console.log(`[INJECTION] Réponse du backend:`, responseData);
+            }
         }
+        console.log('----------------------------------------');
     } catch (error) {
-        console.error(`Error injecting action k=${k}, v=${v}:`, error);
+        console.error('----------------------------------------');
+        console.error(`[INJECTION] Erreur réseau lors de l'injection k=${k}, v=${v}:`, error);
+        console.error(`[INJECTION] DNS appelé: ${backendUrl}`);
+        console.error('----------------------------------------');
+        throw error; // Re-throw pour que sendBatchInjections puisse gérer l'erreur
     }
 };
 
 export const sendBatchInjections = async (state: DashboardState, mappings: LegacyMapping[]): Promise<void> => {
+    const backendUrl = getBackendUrl();
     const actions: InjectionAction[] = [];
+
+    console.log('========================================');
+    console.log('[BATCH INJECTION] Début du traitement');
+    console.log(`[BATCH INJECTION] DNS backend: ${backendUrl}`);
+    console.log('========================================');
 
     // Iterate over state to find modified controls
     for (const [key, value] of Object.entries(state)) {
@@ -76,18 +104,24 @@ export const sendBatchInjections = async (state: DashboardState, mappings: Legac
     }
 
     if (actions.length === 0) {
-        console.log("No actions to inject.");
+        console.log("[BATCH INJECTION] Aucune action à injecter.");
+        console.log('========================================');
         return;
     }
 
-    console.log(`Sending ${actions.length} injections...`);
+    console.log(`[BATCH INJECTION] Nombre d'actions à envoyer: ${actions.length}`);
+    console.log(`[BATCH INJECTION] Actions:`, actions);
 
     // Execute sequentially
-    for (const action of actions) {
+    for (let i = 0; i < actions.length; i++) {
+        const action = actions[i];
+        console.log(`[BATCH INJECTION] Envoi de l'action ${i + 1}/${actions.length}`);
         await sendInjection(action.k, action.v);
     }
 
-    console.log("Batch injection complete.");
+    console.log('========================================');
+    console.log("[BATCH INJECTION] Traitement terminé avec succès");
+    console.log('========================================');
 };
 
 export const buildLegacyPayload = (state: DashboardState, mappings: LegacyMapping[]) => {
