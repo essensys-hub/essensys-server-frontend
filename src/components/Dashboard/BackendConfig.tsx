@@ -181,28 +181,26 @@ export const BackendConfig: React.FC = () => {
 
 // Fonction utilitaire pour obtenir l'URL du backend
 export const getBackendUrl = (): string => {
-    // Si on est sur le même serveur (même hostname), utiliser une URL relative pour les API
-    // Cela évite les problèmes CORS et utilise automatiquement le bon port
+    // Si on est sur le même serveur (même hostname), utiliser une URL relative
+    // Le navigateur utilisera automatiquement le même port que le frontend
+    // Nginx sur le port 9090 proxy les requêtes /api/ vers le backend
     const currentHost = window.location.hostname;
     const savedDns = localStorage.getItem('essensys_backend_dns') || DEFAULT_DNS;
     
-    // Si le DNS configuré correspond au hostname actuel, utiliser une URL relative
+    // Si le DNS configuré correspond au hostname actuel, utiliser le même serveur
     if (currentHost === savedDns || currentHost === 'localhost' || currentHost === '127.0.0.1') {
-        // Utiliser une URL relative qui utilisera automatiquement le port 80 via nginx
-        // ou le port du frontend si on est en développement
-        if (window.location.port === '9090' || window.location.port === '') {
-            // En production (port 9090 ou pas de port), les API sont sur le port 80
-            return `http://${currentHost}:80`;
-        } else {
-            // En développement, utiliser le même hostname/port
-            return `http://${currentHost}:${window.location.port}`;
-        }
+        // Utiliser le même hostname et port que le frontend
+        // Nginx sur le port 9090 a un proxy /api/ vers le backend
+        const port = window.location.port ? `:${window.location.port}` : '';
+        return `${window.location.protocol}//${currentHost}${port}`;
     }
     
     // Sinon, utiliser la configuration sauvegardée
+    // IMPORTANT: Le port doit être 80 pour les API (nginx proxy)
     const dns = savedDns;
     const port = localStorage.getItem('essensys_backend_port') || DEFAULT_PORT;
-    const portStr = port === '80' ? '' : `:${port}`;
-    return `http://${dns}${portStr}`;
+    // Forcer le port 80 pour les API (nginx écoute sur 80 pour les API)
+    const portStr = '80'; // Toujours utiliser le port 80 pour les API via nginx
+    return `http://${dns}${portStr === '80' ? '' : `:${portStr}`}`;
 };
 
