@@ -29,11 +29,16 @@ interface InjectionAction {
 
 export const sendInjection = async (k: number, v: string): Promise<void> => {
     const backendUrl = getBackendUrl();
-    const apiUrl = `${backendUrl}/api/admin/inject`;
+    // Utiliser /api/ comme chemin relatif si on est sur le même serveur
+    // Sinon utiliser l'URL complète
+    const apiUrl = backendUrl.startsWith('http://') && !backendUrl.includes(window.location.hostname) 
+        ? `${backendUrl}/api/admin/inject`
+        : `/api/admin/inject`;
     
     console.log('----------------------------------------');
-    console.log(`[INJECTION] DNS appelé: ${backendUrl}`);
-    console.log(`[INJECTION] URL complète: ${apiUrl}`);
+    console.log(`[INJECTION] Hostname actuel: ${window.location.hostname}:${window.location.port}`);
+    console.log(`[INJECTION] Backend URL configurée: ${backendUrl}`);
+    console.log(`[INJECTION] URL API complète: ${apiUrl}`);
     console.log(`[INJECTION] Valeurs: k=${k}, v=${v}`);
     
     try {

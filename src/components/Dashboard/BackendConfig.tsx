@@ -181,7 +181,26 @@ export const BackendConfig: React.FC = () => {
 
 // Fonction utilitaire pour obtenir l'URL du backend
 export const getBackendUrl = (): string => {
-    const dns = localStorage.getItem('essensys_backend_dns') || DEFAULT_DNS;
+    // Si on est sur le même serveur (même hostname), utiliser une URL relative pour les API
+    // Cela évite les problèmes CORS et utilise automatiquement le bon port
+    const currentHost = window.location.hostname;
+    const savedDns = localStorage.getItem('essensys_backend_dns') || DEFAULT_DNS;
+    
+    // Si le DNS configuré correspond au hostname actuel, utiliser une URL relative
+    if (currentHost === savedDns || currentHost === 'localhost' || currentHost === '127.0.0.1') {
+        // Utiliser une URL relative qui utilisera automatiquement le port 80 via nginx
+        // ou le port du frontend si on est en développement
+        if (window.location.port === '9090' || window.location.port === '') {
+            // En production (port 9090 ou pas de port), les API sont sur le port 80
+            return `http://${currentHost}:80`;
+        } else {
+            // En développement, utiliser le même hostname/port
+            return `http://${currentHost}:${window.location.port}`;
+        }
+    }
+    
+    // Sinon, utiliser la configuration sauvegardée
+    const dns = savedDns;
     const port = localStorage.getItem('essensys_backend_port') || DEFAULT_PORT;
     const portStr = port === '80' ? '' : `:${port}`;
     return `http://${dns}${portStr}`;
