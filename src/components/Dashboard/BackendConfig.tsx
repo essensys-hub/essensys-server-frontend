@@ -198,9 +198,8 @@ export const getBackendUrl = (): string => {
     // Sinon, utiliser la configuration sauvegardée
     // IMPORTANT: Le port doit être 80 pour les API (nginx proxy)
     const dns = savedDns;
-    const port = localStorage.getItem('essensys_backend_port') || DEFAULT_PORT;
     // Forcer le port 80 pour les API (nginx écoute sur 80 pour les API)
-    const portStr = '80'; // Toujours utiliser le port 80 pour les API via nginx
-    return `http://${dns}${portStr === '80' ? '' : `:${portStr}`}`;
+    // Le port configuré dans localStorage n'est pas utilisé car on force toujours 80
+    return `http://${dns}`; // Port 80 par défaut (pas besoin de :80)
 };
 
