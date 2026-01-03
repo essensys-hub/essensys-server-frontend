@@ -181,25 +181,29 @@ export const BackendConfig: React.FC = () => {
 
 // Fonction utilitaire pour obtenir l'URL du backend
 export const getBackendUrl = (): string => {
-    // Si on est sur le même serveur (même hostname), utiliser une URL relative
-    // Le navigateur utilisera automatiquement le même port que le frontend
-    // Nginx sur le port 80 proxy les requêtes /api/ vers le backend sur 8080
     const currentHost = window.location.hostname;
+    const currentProtocol = window.location.protocol; // 'http:' ou 'https:'
     const savedDns = localStorage.getItem('essensys_backend_dns') || DEFAULT_DNS;
     
-    // Si le DNS configuré correspond au hostname actuel, utiliser une URL relative
-    // Cela permet à nginx de proxy /api/ vers le backend
-    if (currentHost === savedDns || currentHost === 'localhost' || currentHost === '127.0.0.1') {
+    // Détecter si on est en WAN (HTTPS) ou en local (HTTP)
+    const isWAN = currentProtocol === 'https:';
+    const isLocal = currentProtocol === 'http:' && (currentHost === 'mon.essensys.fr' || currentHost === 'localhost' || currentHost === '127.0.0.1');
+    
+    // Si on est en local (HTTP + mon.essensys.fr), utiliser une URL relative
+    // Nginx sur le port 80 proxy les requêtes /api/ vers le backend
+    if (isLocal) {
         // Utiliser une URL relative pour que nginx proxy /api/ vers le backend
-        // Nginx sur le port 80 a un proxy /api/ vers le backend sur 8080
         return ''; // URL vide = URL relative, nginx proxy /api/ vers backend
     }
     
-    // Sinon, utiliser la configuration sauvegardée
-    // IMPORTANT: Le port doit être 80 pour les API (nginx proxy)
-    const dns = savedDns;
-    // Forcer le port 80 pour les API (nginx écoute sur 80 pour les API)
-    // Le port configuré dans localStorage n'est pas utilisé car on force toujours 80
-    return `http://${dns}`; // Port 80 par défaut (pas besoin de :80)
+    // Si on est en WAN (HTTPS), utiliser le domaine WAN avec HTTPS
+    if (isWAN) {
+        // Utiliser le hostname actuel (domaine WAN) avec HTTPS
+        // Traefik sur le port 443 proxy /api/admin/inject vers le backend
+        return `${currentProtocol}//${currentHost}`; // https://essensys.rhinosys.io
+    }
+    
+    // Fallback: utiliser la configuration sauvegardée avec HTTP
+    return `http://${savedDns}`;
 };
 

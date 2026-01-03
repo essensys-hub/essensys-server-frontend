@@ -29,20 +29,20 @@ interface InjectionAction {
 
 export const sendInjection = async (k: number, v: string): Promise<void> => {
     const backendUrl = getBackendUrl();
-    // Utiliser /api/ comme chemin relatif si on est sur le même serveur
-    // Sinon utiliser l'URL complète avec le port 80
+    const currentProtocol = window.location.protocol;
     const currentHost = window.location.hostname;
-    const isSameServer = backendUrl.includes(currentHost) || 
-                         currentHost === 'localhost' || 
-                         currentHost === '127.0.0.1';
     
-    const apiUrl = isSameServer 
-        ? `/api/admin/inject`  // URL relative - nginx proxy vers backend
-        : `${backendUrl}/api/admin/inject`;  // URL absolue avec port 80
+    // Déterminer l'URL de l'API
+    // Si backendUrl est vide (local), utiliser URL relative
+    // Sinon, utiliser l'URL complète avec le bon protocole
+    const apiUrl = backendUrl === '' 
+        ? `/api/admin/inject`  // URL relative - nginx proxy vers backend (local)
+        : `${backendUrl}/api/admin/inject`;  // URL absolue (WAN: HTTPS, local configuré: HTTP)
     
     console.log('----------------------------------------');
-    console.log(`[INJECTION] Hostname actuel: ${window.location.hostname}:${window.location.port}`);
-    console.log(`[INJECTION] Backend URL configurée: ${backendUrl}`);
+    console.log(`[INJECTION] Hostname actuel: ${currentHost}:${window.location.port}`);
+    console.log(`[INJECTION] Protocole actuel: ${currentProtocol}`);
+    console.log(`[INJECTION] Backend URL configurée: ${backendUrl || '(relative - même serveur)'}`);
     console.log(`[INJECTION] URL API utilisée: ${apiUrl}`);
     console.log(`[INJECTION] Valeurs: k=${k}, v=${v}`);
     
