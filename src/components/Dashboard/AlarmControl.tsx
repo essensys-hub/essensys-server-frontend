@@ -6,7 +6,6 @@ export const AlarmControl: React.FC = () => {
 
     const alarmState = (state['alarme'] as string) || '';
     const codeAlarme = (state['codealarme'] as string) || '';
-    const alarmQuestion = (state['alresp'] as string) || '';
 
     const isModified = state['alarme'] !== undefined;
 
@@ -16,8 +15,7 @@ export const AlarmControl: React.FC = () => {
     // In legacy: "alcodecont" is shown if alarm is changing.
 
     const isCodeValid = codeAlarme.length === 4;
-    const isResponseValid = alarmQuestion.length > 0;
-    const canToggle = isCodeValid || isResponseValid;
+    const canToggle = isCodeValid;
 
     return (
         <div className="esys-zone" id="alarmecontainer" style={{ width: '400px', position: 'relative' }}>
@@ -54,21 +52,6 @@ export const AlarmControl: React.FC = () => {
                             />
                         </div>
 
-                        <div style={{ clear: 'both', paddingTop: '10px' }}>
-                            <label htmlFor="question" style={{ display: 'block', float: 'none', width: '200px', textAlign: 'left' }}>
-                                Question secrète (Mock)
-                            </label>
-                            <input
-                                type="text"
-                                id="question"
-                                name="question"
-                                maxLength={255}
-                                style={{ width: 'auto', float: 'left', marginTop: '10px' }}
-                                value={alarmQuestion}
-                                onChange={(e) => setValue('alresp', e.target.value)}
-                            />
-                            <input type="button" value="Vérifier" onClick={() => alert("Verification Mock: OK")} />
-                        </div>
                     </div>
                 </div>
 
