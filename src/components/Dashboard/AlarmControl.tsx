@@ -25,7 +25,7 @@ export const AlarmControl: React.FC = () => {
             <span style={{ display: isModified ? 'inline' : 'none', color: 'red', fontSize: '10px' }}>
                 Changement de paramètre à valider
             </span>
-            <div className={`esys-validinfo ${isModified ? 'tovalidate' : ''}`} style={{ opacity: 0.5, pointerEvents: 'none' }}>
+            <div className={`esys-validinfo ${isModified ? 'tovalidate' : ''}`}>
                 <h3>Alarme</h3>
 
                 <div className="float-left alarmeor" style={{ width: '20px', display: 'none' }}>
