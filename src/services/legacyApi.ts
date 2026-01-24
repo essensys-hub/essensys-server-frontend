@@ -31,21 +31,21 @@ export const sendInjection = async (k: number, v: string): Promise<void> => {
     const backendUrl = getBackendUrl();
     const currentProtocol = window.location.protocol;
     const currentHost = window.location.hostname;
-    
+
     // Déterminer l'URL de l'API
     // Si backendUrl est vide (local), utiliser URL relative
     // Sinon, utiliser l'URL complète avec le bon protocole
-    const apiUrl = backendUrl === '' 
+    const apiUrl = backendUrl === ''
         ? `/api/admin/inject`  // URL relative - nginx proxy vers backend (local)
         : `${backendUrl}/api/admin/inject`;  // URL absolue (WAN: HTTPS, local configuré: HTTP)
-    
+
     console.log('----------------------------------------');
     console.log(`[INJECTION] Hostname actuel: ${currentHost}:${window.location.port}`);
     console.log(`[INJECTION] Protocole actuel: ${currentProtocol}`);
     console.log(`[INJECTION] Backend URL configurée: ${backendUrl || '(relative - même serveur)'}`);
     console.log(`[INJECTION] URL API utilisée: ${apiUrl}`);
     console.log(`[INJECTION] Valeurs: k=${k}, v=${v}`);
-    
+
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
@@ -57,7 +57,7 @@ export const sendInjection = async (k: number, v: string): Promise<void> => {
 
         // Afficher le code retour du backend
         console.log(`[INJECTION] Code retour du backend: ${response.status} ${response.statusText}`);
-        
+
         if (!response.ok) {
             console.error(`[INJECTION] Échec de l'injection k=${k}, v=${v}: ${response.status} ${response.statusText}`);
             const errorText = await response.text().catch(() => '');
@@ -239,3 +239,35 @@ export const buildLegacyPayload = (state: DashboardState, mappings: LegacyMappin
 
     return payload;
 };
+
+export const sendAlarmAction = async (alarmState: string, code: string): Promise<any> => {
+    const backendUrl = getBackendUrl();
+    const apiUrl = backendUrl === ''
+        ? `/api/web/actions`
+        : `${backendUrl}/api/web/actions`;
+
+    console.log(`[ALARM] Sending Action: State=${alarmState}, Code=${code}`);
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ alarme: alarmState, codealarme: code }),
+        });
+
+        if (!response.ok) {
+            console.error(`[ALARM] Failed: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to send alarm action: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log(`[ALARM] Success:`, data);
+        return data;
+    } catch (error) {
+        console.error(`[ALARM] Error:`, error);
+        throw error;
+    }
+};
+

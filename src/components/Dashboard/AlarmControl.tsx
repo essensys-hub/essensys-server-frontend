@@ -21,33 +21,7 @@ export const AlarmControl: React.FC = () => {
 
     return (
         <div className="esys-zone" id="alarmecontainer" style={{ width: '400px', position: 'relative' }}>
-            <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'rgba(128, 128, 128, 0.5)',
-                zIndex: 10,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'none'
-            }}>
-                <div style={{
-                    backgroundColor: 'white',
-                    padding: '15px 25px',
-                    border: '2px solid #666',
-                    borderRadius: '8px',
-                    fontWeight: 'bold',
-                    color: '#666',
-                    fontSize: '16px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.2)',
-                    textAlign: 'center'
-                }}>
-                    en cours de DEV
-                </div>
-            </div>
+
             <span style={{ display: isModified ? 'inline' : 'none', color: 'red', fontSize: '10px' }}>
                 Changement de paramètre à valider
             </span>

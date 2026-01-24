@@ -9,7 +9,7 @@ import { LightingControl, mainLights, indirectLights } from './components/Dashbo
 import { NotificationControl } from './components/Dashboard/NotificationControl';
 import { BackendConfig } from './components/Dashboard/BackendConfig';
 import { DashboardProvider, useDashboard } from './context/DashboardContext';
-import { buildLegacyPayload, sendBatchInjections } from './services/legacyApi';
+import { buildLegacyPayload, sendBatchInjections, sendAlarmAction } from './services/legacyApi';
 
 const heatingOptionsStandard: HeatingOption[] = [
   { value: '1', label: 'Automatique (planning)' },
@@ -46,7 +46,7 @@ const DashboardContent: React.FC = () => {
 
     // 1. Build legacy payload (for debug/completeness)
     const payload = buildLegacyPayload(state, allMappings);
-    
+
     // Afficher les valeurs demandées à l'utilisateur
     console.log('========================================');
     console.log('[VALIDATION] Valeurs demandées à l\'utilisateur:');
@@ -54,10 +54,19 @@ const DashboardContent: React.FC = () => {
     console.log('État du dashboard:', state);
     console.log('Payload construit:', payload);
     console.log('Mappings utilisés:', allMappings);
-    
+
     // 2. Send injections to backend (New Requirement)
     try {
       await sendBatchInjections(state, allMappings);
+
+      // Send Alarm Action if modified
+      const alarmState = state['alarme'] as string;
+      const alarmCode = state['codealarme'] as string;
+
+      if (alarmState && alarmCode && alarmCode.length === 4) {
+        console.log('[VALIDATION] Sending Alarm Action...');
+        await sendAlarmAction(alarmState, alarmCode);
+      }
       console.log('========================================');
       console.log('[VALIDATION] Validation terminée avec succès');
       console.log('========================================');
@@ -77,7 +86,7 @@ const DashboardContent: React.FC = () => {
   return (
     <Layout>
       <BackendConfig />
-      
+
       <div className="es-mainaction">
         <input
           type="button"
