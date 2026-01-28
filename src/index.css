@@ -1,6 +1,23 @@
-/* Feuille de style Essensys
-20130108
-*/
+/* Tailwind CSS v4 */
+@import "tailwindcss";
+
+/* Custom theme variables */
+@theme {
+  --color-essensys-primary: #2563eb;
+  --color-essensys-primary-dark: #1d4ed8;
+  --color-essensys-secondary: #64748b;
+  --color-essensys-danger: #dc2626;
+  --color-essensys-danger-dark: #b91c1c;
+  --color-essensys-success: #16a34a;
+  --color-essensys-warning: #f59e0b;
+  --color-essensys-background: #f8f8f8;
+}
+
+/* ============================================
+   Legacy Essensys Styles (2013) - For backward compatibility
+   New components should use Tailwind classes
+   ============================================ */
+
 body 
 {
     font-family:'Lucida Grande', 'Lucida Sans Unicode', Helvetica, Arial, Verdana, sans-serif;

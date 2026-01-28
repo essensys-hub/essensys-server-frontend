@@ -1,0 +1,9 @@
+export { DashboardPage } from './DashboardPage';
+export { SecurityPage } from './SecurityPage';
+export { HeatingPage } from './HeatingPage';
+export { LightingPage } from './LightingPage';
+export { ShuttersPage } from './ShuttersPage';
+export { WaterHeaterPage } from './WaterHeaterPage';
+export { SprinklerPage } from './SprinklerPage';
+export { NotificationsPage } from './NotificationsPage';
+export { SettingsPage } from './SettingsPage';

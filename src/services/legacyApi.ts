@@ -240,6 +240,57 @@ export const buildLegacyPayload = (state: DashboardState, mappings: LegacyMappin
     return payload;
 };
 
+// Response type for history/latest endpoint
+export interface LastActionResponse {
+    lastAction: {
+        id: number;
+        guid: string;
+        machineId: number;
+        actionType: string;
+        actionInfo: string;
+        isDone: boolean;
+        timestamp: string;
+        indexes: Array<{
+            id: number;
+            action_id: number;
+            index_id: number;
+            value: string;
+        }>;
+    } | null;
+    message: string;
+}
+
+export const getHistoryLatest = async (): Promise<LastActionResponse> => {
+    const backendUrl = getBackendUrl();
+    const apiUrl = backendUrl === ''
+        ? `/api/web/history/latest`
+        : `${backendUrl}/api/web/history/latest`;
+
+    console.log(`[HISTORY] Fetching latest action history from: ${apiUrl}`);
+
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include', // Include session cookie
+        });
+
+        if (!response.ok) {
+            console.error(`[HISTORY] Failed: ${response.status} ${response.statusText}`);
+            throw new Error(`Failed to get history: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log(`[HISTORY] Success:`, data);
+        return data;
+    } catch (error) {
+        console.error(`[HISTORY] Error:`, error);
+        throw error;
+    }
+};
+
 export const sendAlarmAction = async (alarmState: string, code: string): Promise<any> => {
     const backendUrl = getBackendUrl();
     const apiUrl = backendUrl === ''
