@@ -53,10 +53,9 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
           <div className="flex items-center">
             <img 
               src="/images/logosml.png" 
-              alt="Essensys" 
+              alt="mon Essensys" 
               className="h-8"
             />
-            <span className="ml-3 text-lg font-semibold text-gray-800">Essensys</span>
           </div>
           <button
             onClick={onClose}

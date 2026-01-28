@@ -37,10 +37,9 @@ export const SidebarMenu: React.FC = () => {
       <div className="flex items-center h-16 px-6 border-b border-gray-200">
         <img 
           src="/images/logosml.png" 
-          alt="Essensys" 
+          alt="mon Essensys" 
           className="h-8"
         />
-        <span className="ml-3 text-lg font-semibold text-gray-800">Essensys</span>
       </div>
 
       {/* Navigation */}

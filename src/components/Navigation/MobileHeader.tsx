@@ -21,12 +21,9 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuClick, title }
         <div className="flex items-center">
           <img 
             src="/images/logosml.png" 
-            alt="Essensys" 
+            alt="mon Essensys" 
             className="h-6"
           />
-          {title && (
-            <span className="ml-2 text-sm font-medium text-gray-700">{title}</span>
-          )}
         </div>
 
         {/* Spacer for centering */}
