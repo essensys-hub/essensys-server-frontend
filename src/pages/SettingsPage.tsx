@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Cog6ToothIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 
 const STORAGE_KEY = 'essensys_backend_config';
@@ -113,34 +113,85 @@ export const SettingsPage: React.FC = () => {
           </div>
         </ControlCard>
 
+        {/* Auth Status */}
+        <ControlCard
+          title="Authentification"
+          description="Sécurité d'accès au système"
+          icon={ShieldCheckIcon}
+        >
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <ShieldCheckIcon className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-green-800">Authentification active</p>
+                <p className="text-xs text-green-700 mt-1">
+                  L'accès au système est protégé par authentification HTTP Basic au niveau du reverse-proxy Caddy.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-500">Type d'authentification</span>
+                <span className="font-medium text-gray-900">HTTP Basic (Caddy)</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-500">Méthode de hash</span>
+                <span className="font-medium text-gray-900">bcrypt</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-gray-500">Protection WAN</span>
+                <span className="font-medium text-green-600">Obligatoire</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">Gestion des utilisateurs</p>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Utilisez la commande <code className="bg-amber-100 px-1 rounded">sudo essensys-auth</code> sur le Raspberry Pi pour gérer les utilisateurs et les modes d'authentification.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ControlCard>
+
         {/* System Info */}
         <ControlCard title="Informations système">
           <div className="space-y-3">
             <div className="flex justify-between py-2 border-b border-gray-100">
               <span className="text-sm text-gray-500">Version application</span>
-              <span className="text-sm font-medium text-gray-900">1.2.0</span>
+              <span className="text-sm font-medium text-gray-900">1.2.1</span>
             </div>
             <div className="flex justify-between py-2 border-b border-gray-100">
               <span className="text-sm text-gray-500">Mode de connexion</span>
               <span className="text-sm font-medium text-gray-900">
-                {window.location.protocol === 'https:' ? 'HTTPS (WAN)' : 'HTTP (Local)'}
+                {window.location.protocol === 'https:' ? 'HTTPS sécurisé' : 'HTTP (Local)'}
               </span>
             </div>
-            <div className="flex justify-between py-2">
+            <div className="flex justify-between py-2 border-b border-gray-100">
               <span className="text-sm text-gray-500">Hôte actuel</span>
               <span className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
                 {window.location.host}
               </span>
+            </div>
+            <div className="flex justify-between py-2">
+              <span className="text-sm text-gray-500">Reverse Proxy</span>
+              <span className="text-sm font-medium text-gray-900">Caddy</span>
             </div>
           </div>
         </ControlCard>
 
         {/* Info */}
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="font-medium text-blue-800 mb-1">À propos de la configuration</h4>
+          <h4 className="font-medium text-blue-800 mb-1">À propos de la sécurité</h4>
           <p className="text-sm text-blue-700">
-            En réseau local, l'application utilise automatiquement le proxy nginx. 
-            Pour un accès distant (WAN), configurez l'adresse DuckDNS de votre serveur.
+            L'authentification est gérée au niveau du reverse-proxy Caddy. 
+            En accès WAN, un identifiant et mot de passe sont toujours requis. 
+            En LAN, l'accès sans authentification peut être activé via <code className="bg-blue-100 px-1 rounded">essensys-auth lan-noauth on</code>.
           </p>
         </div>
       </div>

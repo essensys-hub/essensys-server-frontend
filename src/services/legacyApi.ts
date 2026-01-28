@@ -1,6 +1,26 @@
 import type { DashboardState } from '../context/DashboardContext';
 import { getBackendUrl } from '../components/Dashboard/BackendConfig';
 
+// Error class for authentication errors
+export class AuthenticationError extends Error {
+    constructor(message: string = 'Authentification requise') {
+        super(message);
+        this.name = 'AuthenticationError';
+    }
+}
+
+// Helper to handle 401 errors
+const handleAuthError = (response: Response): void => {
+    if (response.status === 401) {
+        console.error('[AUTH] Erreur 401 - Authentification requise');
+        // Display a simple alert for now (Basic Auth will show browser prompt)
+        alert('Session expirée ou authentification requise. Veuillez vous reconnecter.');
+        // Reload page to trigger Basic Auth prompt
+        window.location.reload();
+        throw new AuthenticationError();
+    }
+};
+
 // Types for the configuration of components that need to be mapped to dindex/dvalue
 export interface LegacyMapping {
     name: string;
@@ -57,6 +77,9 @@ export const sendInjection = async (k: number, v: string): Promise<void> => {
 
         // Afficher le code retour du backend
         console.log(`[INJECTION] Code retour du backend: ${response.status} ${response.statusText}`);
+
+        // Gérer les erreurs 401
+        handleAuthError(response);
 
         if (!response.ok) {
             console.error(`[INJECTION] Échec de l'injection k=${k}, v=${v}: ${response.status} ${response.statusText}`);
@@ -277,6 +300,9 @@ export const getHistoryLatest = async (): Promise<LastActionResponse> => {
             credentials: 'include', // Include session cookie
         });
 
+        // Gérer les erreurs 401
+        handleAuthError(response);
+
         if (!response.ok) {
             console.error(`[HISTORY] Failed: ${response.status} ${response.statusText}`);
             throw new Error(`Failed to get history: ${response.statusText}`);
@@ -307,6 +333,9 @@ export const sendAlarmAction = async (alarmState: string, code: string): Promise
             },
             body: JSON.stringify({ alarme: alarmState, codealarme: code }),
         });
+
+        // Gérer les erreurs 401
+        handleAuthError(response);
 
         if (!response.ok) {
             console.error(`[ALARM] Failed: ${response.status} ${response.statusText}`);
