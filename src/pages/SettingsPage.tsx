@@ -117,7 +117,6 @@ export const SettingsPage: React.FC = () => {
         <ControlCard
           title="Authentification"
           description="Sécurité d'accès au système"
-          icon={ShieldCheckIcon}
         >
           <div className="space-y-4">
             <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
