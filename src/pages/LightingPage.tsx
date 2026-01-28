@@ -6,30 +6,49 @@ import { sendInjection } from '../services/legacyApi';
 interface Light {
   id: string;
   name: string;
+  dvalue: string;
   onIndex: number;
   offIndex: number;
 }
 
+// Utilise les mêmes données que LightingControl.tsx (V.1.0.0)
 const mainLights: Light[] = [
-  { id: 'eclp1', name: 'Éclairage 1', onIndex: 200, offIndex: 201 },
-  { id: 'eclp2', name: 'Éclairage 2', onIndex: 202, offIndex: 203 },
-  { id: 'eclp3', name: 'Éclairage 3', onIndex: 204, offIndex: 205 },
-  { id: 'eclp4', name: 'Éclairage 4', onIndex: 206, offIndex: 207 },
-  { id: 'eclp5', name: 'Éclairage 5', onIndex: 208, offIndex: 209 },
-  { id: 'eclp6', name: 'Éclairage 6', onIndex: 210, offIndex: 211 },
-  { id: 'eclp7', name: 'Éclairage 7', onIndex: 212, offIndex: 213 },
-  { id: 'eclp8', name: 'Éclairage 8', onIndex: 214, offIndex: 215 },
-  { id: 'eclp9', name: 'Éclairage 9', onIndex: 216, offIndex: 217 },
-  { id: 'eclp10', name: 'Éclairage 10', onIndex: 218, offIndex: 219 },
+  { id: 'terrasse', name: 'Terrasse', dvalue: '4', onIndex: 616, offIndex: 610 },
+  { id: 'entree', name: 'Entrée', dvalue: '1', onIndex: 611, offIndex: 605 },
+  { id: 'escalier', name: 'Escalier', dvalue: '1', onIndex: 613, offIndex: 607 },
+  { id: 'deg1', name: 'Dégagement 1', dvalue: '1', onIndex: 616, offIndex: 610 },
+  { id: 'deg2', name: 'Dégagement 2', dvalue: '2', onIndex: 616, offIndex: 610 },
+  { id: 'pieceserv', name: 'Pièce de service', dvalue: '128', onIndex: 615, offIndex: 609 },
+  { id: 'ann1', name: 'Annexe 1', dvalue: '8', onIndex: 616, offIndex: 610 },
+  { id: 'ann2', name: 'Annexe 2', dvalue: '16', onIndex: 616, offIndex: 610 },
+  { id: 'salon', name: 'Salon', dvalue: '128', onIndex: 612, offIndex: 606 },
+  { id: 'sam', name: 'Salle à Manger', dvalue: '64', onIndex: 612, offIndex: 606 },
+  { id: 'cuisine', name: 'Cuisine', dvalue: '1', onIndex: 615, offIndex: 609 },
+  { id: 'sdb1', name: 'Salle de Bain 1', dvalue: '128', onIndex: 616, offIndex: 610 },
+  { id: 'sdb2', name: 'Salle de Bain 2', dvalue: '8', onIndex: 615, offIndex: 609 },
+  { id: 'wc1', name: 'WC 1', dvalue: '32', onIndex: 615, offIndex: 609 },
+  { id: 'wc2', name: 'WC 2', dvalue: '64', onIndex: 615, offIndex: 609 },
+  { id: 'bureau', name: 'Bureau', dvalue: '32', onIndex: 612, offIndex: 606 },
+  { id: 'gdchamb', name: 'Grande Chambre', dvalue: '128', onIndex: 614, offIndex: 608 },
+  { id: 'ptchamb1', name: 'Petite Chambre 1', dvalue: '64', onIndex: 614, offIndex: 608 },
+  { id: 'ptchamb2', name: 'Petite Chambre 2', dvalue: '32', onIndex: 614, offIndex: 608 },
+  { id: 'ptchamb3', name: 'Petite Chambre 3', dvalue: '16', onIndex: 614, offIndex: 608 },
+  { id: 'dressing', name: 'Dressing', dvalue: '8', onIndex: 611, offIndex: 605 },
 ];
 
 const indirectLights: Light[] = [
-  { id: 'ecli1', name: 'Indirect 1', onIndex: 220, offIndex: 221 },
-  { id: 'ecli2', name: 'Indirect 2', onIndex: 222, offIndex: 223 },
-  { id: 'ecli3', name: 'Indirect 3', onIndex: 224, offIndex: 225 },
-  { id: 'ecli4', name: 'Indirect 4', onIndex: 226, offIndex: 227 },
-  { id: 'ecli5', name: 'Indirect 5', onIndex: 228, offIndex: 229 },
-  { id: 'ecli6', name: 'Indirect 6', onIndex: 230, offIndex: 231 },
+  { id: 'isalonind', name: 'Salon (indirect 1)', dvalue: '2', onIndex: 611, offIndex: 605 },
+  { id: 'isalonind2', name: 'Salon (indirect 2)', dvalue: '4', onIndex: 611, offIndex: 605 },
+  { id: 'icuisine', name: 'Cuisine (plans de travail)', dvalue: '2', onIndex: 615, offIndex: 609 },
+  { id: 'isdb1', name: 'Salle de Bain 1 (miroir)', dvalue: '4', onIndex: 615, offIndex: 609 },
+  { id: 'isdb2', name: 'Salle de Bain 2 (miroir)', dvalue: '16', onIndex: 615, offIndex: 609 },
+  { id: 'igdchamb1', name: 'Grande Chambre (chevet 1)', dvalue: '2', onIndex: 613, offIndex: 607 },
+  { id: 'igdchamb2', name: 'Grande Chambre (chevet 2)', dvalue: '4', onIndex: 613, offIndex: 607 },
+  { id: 'iptchamb1', name: 'Petite Chambre 1 (chevet 1)', dvalue: '8', onIndex: 613, offIndex: 607 },
+  { id: 'iptchamb2', name: 'Petite Chambre 1 (chevet 2)', dvalue: '16', onIndex: 613, offIndex: 607 },
+  { id: 'iptchamb22', name: 'Petite Chambre 2 (chevet)', dvalue: '32', onIndex: 613, offIndex: 607 },
+  { id: 'iptchamb3', name: 'Petite Chambre 3 (chevet)', dvalue: '64', onIndex: 613, offIndex: 607 },
+  { id: 'idressing', name: 'Dressing (placards)', dvalue: '16', onIndex: 611, offIndex: 605 },
 ];
 
 export const LightingPage: React.FC = () => {
@@ -43,7 +62,7 @@ export const LightingPage: React.FC = () => {
 
     try {
       const index = action === 'on' ? light.onIndex : light.offIndex;
-      await sendInjection(index, '1');
+      await sendInjection(index, light.dvalue);
       setSuccess(`${light.name} : ${action === 'on' ? 'Allumé' : 'Éteint'}`);
     } catch (e) {
       console.error(e);
@@ -59,7 +78,7 @@ export const LightingPage: React.FC = () => {
     try {
       for (const light of lights) {
         const index = action === 'on' ? light.onIndex : light.offIndex;
-        await sendInjection(index, '1');
+        await sendInjection(index, light.dvalue);
       }
       setSuccess(`${groupName} : Tous ${action === 'on' ? 'allumés' : 'éteints'}`);
     } catch (e) {

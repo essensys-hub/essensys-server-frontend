@@ -6,29 +6,32 @@ import { sendInjection } from '../services/legacyApi';
 interface Shutter {
   id: string;
   name: string;
+  dvalue: string;
   openIndex: number;
   closeIndex: number;
 }
 
+// Utilise les mêmes données que ShutterControl.tsx (V.1.0.0)
 const shutters: Shutter[] = [
-  { id: 'volet1', name: 'Volet 1', openIndex: 300, closeIndex: 301 },
-  { id: 'volet2', name: 'Volet 2', openIndex: 302, closeIndex: 303 },
-  { id: 'volet3', name: 'Volet 3', openIndex: 304, closeIndex: 305 },
-  { id: 'volet4', name: 'Volet 4', openIndex: 306, closeIndex: 307 },
-  { id: 'volet5', name: 'Volet 5', openIndex: 308, closeIndex: 309 },
-  { id: 'volet6', name: 'Volet 6', openIndex: 310, closeIndex: 311 },
-  { id: 'volet7', name: 'Volet 7', openIndex: 312, closeIndex: 313 },
-  { id: 'volet8', name: 'Volet 8', openIndex: 314, closeIndex: 315 },
-  { id: 'volet9', name: 'Volet 9', openIndex: 316, closeIndex: 317 },
-  { id: 'volet10', name: 'Volet 10', openIndex: 318, closeIndex: 319 },
-  { id: 'volet11', name: 'Volet 11', openIndex: 320, closeIndex: 321 },
-  { id: 'volet12', name: 'Volet 12', openIndex: 322, closeIndex: 323 },
-  { id: 'volet13', name: 'Volet 13', openIndex: 324, closeIndex: 325 },
+  { id: 'volet1salon', name: 'Volet 1 Salon', dvalue: '1', openIndex: 617, closeIndex: 620 },
+  { id: 'volet2salon', name: 'Volet 2 Salon', dvalue: '2', openIndex: 617, closeIndex: 620 },
+  { id: 'volet3salon', name: 'Volet 3 Salon', dvalue: '4', openIndex: 617, closeIndex: 620 },
+  { id: 'volet1salleamanger', name: 'Volet 1 Salle à Manger', dvalue: '8', openIndex: 617, closeIndex: 620 },
+  { id: 'volet2salleamanger', name: 'Volet 2 Salle à Manger', dvalue: '16', openIndex: 617, closeIndex: 620 },
+  { id: 'volet1cuisine', name: 'Volet 1 Cuisine', dvalue: '1', openIndex: 619, closeIndex: 622 },
+  { id: 'volet2cuisine', name: 'Volet 2 Cuisine', dvalue: '2', openIndex: 619, closeIndex: 622 },
+  { id: 'voletsdb', name: 'Volet Salle de Bain 1', dvalue: '4', openIndex: 619, closeIndex: 622 },
+  { id: 'volet1gdchamb', name: 'Volet 1 Grande Chambre', dvalue: '1', openIndex: 618, closeIndex: 621 },
+  { id: 'volet2gdchamb', name: 'Volet 2 Grande Chambre', dvalue: '2', openIndex: 618, closeIndex: 621 },
+  { id: 'volet1ptchamb', name: 'Volet Petite Chambre 1', dvalue: '4', openIndex: 618, closeIndex: 621 },
+  { id: 'volet2ptchamb', name: 'Volet Petite Chambre 2', dvalue: '8', openIndex: 618, closeIndex: 621 },
+  { id: 'volet3ptchamb', name: 'Volet Petite Chambre 3', dvalue: '16', openIndex: 618, closeIndex: 621 },
+  { id: 'voletbureau', name: 'Volet Bureau', dvalue: '32', openIndex: 617, closeIndex: 620 },
 ];
 
 const stores: Shutter[] = [
-  { id: 'store', name: 'Store', openIndex: 330, closeIndex: 331 },
-  { id: 'voletstore', name: 'Volet Store', openIndex: 332, closeIndex: 333 },
+  { id: 'voletstore', name: 'Volet "Store"', dvalue: '64', openIndex: 617, closeIndex: 620 },
+  { id: 'store', name: 'Store (banne)', dvalue: '8', openIndex: 619, closeIndex: 622 },
 ];
 
 export const ShuttersPage: React.FC = () => {
@@ -42,7 +45,7 @@ export const ShuttersPage: React.FC = () => {
 
     try {
       const index = action === 'open' ? shutter.openIndex : shutter.closeIndex;
-      await sendInjection(index, '1');
+      await sendInjection(index, shutter.dvalue);
       setSuccess(`${shutter.name} : ${action === 'open' ? 'Ouvert' : 'Fermé'}`);
     } catch (e) {
       console.error(e);
@@ -58,7 +61,7 @@ export const ShuttersPage: React.FC = () => {
     try {
       for (const item of items) {
         const index = action === 'open' ? item.openIndex : item.closeIndex;
-        await sendInjection(index, '1');
+        await sendInjection(index, item.dvalue);
       }
       setSuccess(`${groupName} : Tous ${action === 'open' ? 'ouverts' : 'fermés'}`);
     } catch (e) {
@@ -146,7 +149,7 @@ export const ShuttersPage: React.FC = () => {
           {renderShutterControls(shutters, 'Volets')}
         </ControlCard>
 
-        <ControlCard title="Stores" description="Stores extérieurs">
+        <ControlCard title="Volet Store et Store banne" description="Éléments spéciaux">
           {renderShutterControls(stores, 'Stores')}
         </ControlCard>
       </div>
