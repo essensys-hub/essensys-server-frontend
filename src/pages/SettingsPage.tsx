@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
+import { useTheme } from '../context/ThemeContext';
+import type { Theme } from '../context/ThemeContext';
 
 const STORAGE_KEY = 'essensys_backend_config';
 
@@ -42,6 +44,30 @@ export const SettingsPage: React.FC = () => {
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
+
+  const { theme, setTheme } = useTheme();
+
+  const ThemeOption = ({ value, label, color }: { value: Theme; label: string; color: string }) => (
+    <button
+      onClick={() => setTheme(value)}
+      className={`
+        relative p-3 rounded-lg border-2 text-left transition-all
+        ${theme === value
+          ? 'border-essensys-primary ring-1 ring-essensys-primary'
+          : 'border-transparent hover:border-gray-200'
+        }
+        bg-opacity-10
+      `}
+    >
+      <div className={`h-8 w-full rounded mb-2 ${color} border`}></div>
+      <span className={`text-sm font-medium ${theme === value ? 'text-essensys-primary' : 'text-gray-600'}`}>
+        {label}
+      </span>
+      {theme === value && (
+        <CheckCircleIcon className="absolute top-2 right-2 w-4 h-4 text-essensys-primary" />
+      )}
+    </button>
+  );
 
   return (
     <div>
@@ -110,6 +136,35 @@ export const SettingsPage: React.FC = () => {
                 onClick={handleReset}
               />
             </div>
+          </div>
+        </ControlCard>
+
+        {/* Theme Selection */}
+        <ControlCard
+          title="Apparence"
+          description="Personnalisez l'affichage de l'application"
+        >
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <ThemeOption
+              value="light"
+              label="Clair"
+              color="bg-white border-gray-200"
+            />
+            <ThemeOption
+              value="dark"
+              label="Sombre"
+              color="bg-slate-900 border-slate-700"
+            />
+            <ThemeOption
+              value="starwars"
+              label="Star Wars"
+              color="bg-black border-red-900"
+            />
+            <ThemeOption
+              value="startrek"
+              label="Star Trek"
+              color="bg-black border-blue-500"
+            />
           </div>
         </ControlCard>
 
@@ -188,8 +243,8 @@ export const SettingsPage: React.FC = () => {
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h4 className="font-medium text-blue-800 mb-1">À propos de la sécurité</h4>
           <p className="text-sm text-blue-700">
-            L'authentification est gérée au niveau du reverse-proxy Caddy. 
-            En accès WAN, un identifiant et mot de passe sont toujours requis. 
+            L'authentification est gérée au niveau du reverse-proxy Caddy.
+            En accès WAN, un identifiant et mot de passe sont toujours requis.
             En LAN, l'accès sans authentification peut être activé via <code className="bg-blue-100 px-1 rounded">essensys-auth lan-noauth on</code>.
           </p>
         </div>
