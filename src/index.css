@@ -145,87 +145,146 @@
 
 /* 
   Star Trek (LCARS) Specific Overrides 
-  Implements the pill-shaped buttons and typography style.
+  Deep structural changes to mimic the LCARS Frame
 */
+
+/* GLOBAL TYPOGRAPHY */
 [data-theme="startrek"] body {
-    font-family: 'Arial Narrow', 'Helvetica Condensed', 'Impact', sans-serif;
+    font-family: 'Arial Narrow', 'Antonio', 'Helvetica Condensed', 'Impact', sans-serif;
     letter-spacing: 0.5px;
+    background-color: black;
+    color: var(--essensys-secondary);
 }
 
+/* LAYOUT TRANSFORMATION: SIDEBAR -> ELBOW */
+/* Target the sidebar container (assuming it's the fixed div on the left) */
+[data-theme="startrek"] aside,
+[data-theme="startrek"] .lg\:w-60 {
+    background-color: transparent !important;
+    border-right: none !important;
+    padding-top: 150px;
+    /* Push content down to make room for top elbow */
+}
+
+/* Hide standard navigation styles */
+[data-theme="startrek"] aside nav a,
+[data-theme="startrek"] .sidebar-link {
+    background-color: var(--essensys-secondary) !important;
+    color: black !important;
+    margin-bottom: 5px;
+    border-radius: 20px 0 0 20px !important;
+    /* Left rounded, right flat */
+    text-transform: uppercase;
+    font-weight: 900;
+    font-size: 18px;
+    justify-content: flex-end !important;
+    padding-right: 15px !important;
+    width: 140px !important;
+    /* Fixed width column */
+    margin-left: auto;
+    /* Align to right of sidebar area */
+    border: none !important;
+}
+
+[data-theme="startrek"] aside nav a.active,
+[data-theme="startrek"] aside nav a:hover {
+    background-color: white !important;
+    color: var(--essensys-primary) !important;
+    width: 150px !important;
+    /* Pop out effect */
+}
+
+/* THE LCARS ELBOW (Top curve) */
+[data-theme="startrek"] body::before {
+    content: "USS ESSENSYS";
+    position: fixed;
+    top: 20px;
+    left: 160px;
+    /* Right of the sidebar column */
+    right: 20px;
+    /* Stretch across top */
+    height: 40px;
+    background-color: var(--essensys-secondary);
+    border-radius: 0 20px 20px 0;
+    /* Top bar end curve */
+    z-index: 50;
+
+    /* Text styling inside the bar */
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    color: black;
+    font-weight: 900;
+    font-size: 24px;
+    letter-spacing: 2px;
+}
+
+/* The vertical connection of the elbow */
+[data-theme="startrek"] body::after {
+    content: "";
+    position: fixed;
+    top: 20px;
+    left: 10px;
+    width: 140px;
+    /* Width of left column */
+    height: 120px;
+    /* Height to connect to first menu item */
+    background-color: var(--essensys-secondary);
+    border-radius: 30px 0 0 0;
+    /* Top left curve */
+    z-index: 49;
+
+    /* Essential: The inner curve cutout */
+    mask: radial-gradient(circle at bottom right, transparent 50px, black 51px);
+    -webkit-mask: radial-gradient(circle at bottom right, transparent 50px, black 51px);
+}
+
+/* BUTTONS */
 [data-theme="startrek"] button,
-[data-theme="startrek"] .button,
-[data-theme="startrek"] [role="button"] {
+[data-theme="startrek"] .button {
     border-radius: 9999px !important;
-    /* Pill shape */
     text-transform: uppercase;
     font-weight: bold;
     letter-spacing: 1px;
-    border-width: 0 !important;
-    /* LCARS buttons are often borderless blocks */
+    border: none !important;
 }
 
-/* Specific styling for ActionButton to look like LCARS pads */
+/* Specific styling for ActionButton variants */
 [data-theme="startrek"] button.bg-essensys-primary {
     background-color: var(--essensys-primary);
     color: black;
-    /* LCARS text on buttons is often black */
-    text-align: right;
-    padding-right: 20px;
 }
 
-[data-theme="startrek"] button.bg-gray-100 {
+[data-theme="startrek"] button.bg-essensys-secondary {
     background-color: var(--essensys-secondary);
     color: black;
 }
 
-/* Inputs should also be rounded in this theme for consistency */
-[data-theme="startrek"] input[type="text"],
-[data-theme="startrek"] input[type="password"] {
-    border-radius: 9999px;
-    background-color: #111;
-    border-color: var(--essensys-primary);
-    color: var(--essensys-primary);
-    text-align: right;
-    /* LCARS data entry often right-aligned */
-    padding-right: 15px;
-}
-
+/* CARDS -> LCARS PANELS */
 [data-theme="startrek"] .bg-white,
-[data-theme="startrek"] .bg-gray-50 {
-    border-radius: 1rem;
-    border: 0;
-    /* Remove borders, use spacing */
+[data-theme="startrek"] .bg-gray-50,
+[data-theme="startrek"] .bg-slate-800,
+[data-theme="startrek"] .bg-slate-900 {
+    background-color: black !important;
+    border: 2px solid var(--essensys-secondary) !important;
+    border-radius: 20px !important;
+    border-top-left-radius: 0 !important;
+    /* Angular corner for style */
+    border-bottom-right-radius: 0 !important;
+    box-shadow: none !important;
 }
 
-/* Add a decorative top bar for LCARS feel on the main layout if possible */
-[data-theme="startrek"] body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 150px;
-    height: 100vh;
-    border-right: 15px solid var(--essensys-secondary);
-    border-top: 100px solid var(--essensys-secondary);
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 100px;
-    z-index: -1;
-    pointer-events: none;
-    opacity: 0.3;
+[data-theme="startrek"] .border-b {
+    border-bottom-color: var(--essensys-secondary) !important;
+    border-bottom-width: 1px;
 }
 
-[data-theme="startrek"] body::after {
-    content: "USS ESSENSYS";
-    position: fixed;
-    top: 10px;
-    left: 20px;
-    font-size: 40px;
-    font-weight: 900;
-    color: black;
-    z-index: -1;
-    opacity: 0.5;
-    font-family: 'Impact', sans-serif;
-    text-transform: uppercase;
+/* Inputs */
+[data-theme="startrek"] input {
+    background-color: #111 !important;
+    border: 1px solid var(--essensys-primary) !important;
+    color: var(--essensys-secondary) !important;
+    border-radius: 15px !important;
 }
 
 /* ============================================
