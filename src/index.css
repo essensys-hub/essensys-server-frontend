@@ -143,6 +143,91 @@
     --color-essensys-background: var(--essensys-bg-app);
 }
 
+/* 
+  Star Trek (LCARS) Specific Overrides 
+  Implements the pill-shaped buttons and typography style.
+*/
+[data-theme="startrek"] body {
+    font-family: 'Arial Narrow', 'Helvetica Condensed', 'Impact', sans-serif;
+    letter-spacing: 0.5px;
+}
+
+[data-theme="startrek"] button,
+[data-theme="startrek"] .button,
+[data-theme="startrek"] [role="button"] {
+    border-radius: 9999px !important;
+    /* Pill shape */
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    border-width: 0 !important;
+    /* LCARS buttons are often borderless blocks */
+}
+
+/* Specific styling for ActionButton to look like LCARS pads */
+[data-theme="startrek"] button.bg-essensys-primary {
+    background-color: var(--essensys-primary);
+    color: black;
+    /* LCARS text on buttons is often black */
+    text-align: right;
+    padding-right: 20px;
+}
+
+[data-theme="startrek"] button.bg-gray-100 {
+    background-color: var(--essensys-secondary);
+    color: black;
+}
+
+/* Inputs should also be rounded in this theme for consistency */
+[data-theme="startrek"] input[type="text"],
+[data-theme="startrek"] input[type="password"] {
+    border-radius: 9999px;
+    background-color: #111;
+    border-color: var(--essensys-primary);
+    color: var(--essensys-primary);
+    text-align: right;
+    /* LCARS data entry often right-aligned */
+    padding-right: 15px;
+}
+
+[data-theme="startrek"] .bg-white,
+[data-theme="startrek"] .bg-gray-50 {
+    border-radius: 1rem;
+    border: 0;
+    /* Remove borders, use spacing */
+}
+
+/* Add a decorative top bar for LCARS feel on the main layout if possible */
+[data-theme="startrek"] body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 150px;
+    height: 100vh;
+    border-right: 15px solid var(--essensys-secondary);
+    border-top: 100px solid var(--essensys-secondary);
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 100px;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+[data-theme="startrek"] body::after {
+    content: "USS ESSENSYS";
+    position: fixed;
+    top: 10px;
+    left: 20px;
+    font-size: 40px;
+    font-weight: 900;
+    color: black;
+    z-index: -1;
+    opacity: 0.5;
+    font-family: 'Impact', sans-serif;
+    text-transform: uppercase;
+}
+
 /* ============================================
    Legacy Essensys Styles (2013) - For backward compatibility
    New components should use Tailwind classes
