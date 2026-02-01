@@ -39,13 +39,13 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
   disableDelay = 3000, // 3 secondes par défaut
 }) => {
   const [isTemporarilyDisabled, setIsTemporarilyDisabled] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<number | null>(null);
 
   // Nettoyer le timeout si le composant est démonté
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
+      if (timeoutRef.current !== null) {
+        window.clearTimeout(timeoutRef.current);
       }
     };
   }, []);
@@ -63,7 +63,7 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
     }
 
     // Réactiver après le délai
-    timeoutRef.current = setTimeout(() => {
+    timeoutRef.current = window.setTimeout(() => {
       setIsTemporarilyDisabled(false);
       timeoutRef.current = null;
     }, disableDelay);
