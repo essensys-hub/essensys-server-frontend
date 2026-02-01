@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success';
 
@@ -11,6 +11,7 @@ interface ActionButtonProps {
   icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  disableDelay?: number; // Délai en millisecondes pour désactiver le bouton après clic (défaut: 3000ms)
 }
 
 const variantStyles: Record<ButtonVariant, string> = {
@@ -35,13 +36,45 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
   icon: Icon,
   className = '',
   size = 'md',
+  disableDelay = 3000, // 3 secondes par défaut
 }) => {
-  const isDisabled = disabled || loading;
+  const [isTemporarilyDisabled, setIsTemporarilyDisabled] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Nettoyer le timeout si le composant est démonté
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleClick = () => {
+    // Exécuter l'action
+    onClick();
+
+    // Désactiver le bouton pendant le délai spécifié
+    setIsTemporarilyDisabled(true);
+    
+    // Nettoyer le timeout précédent s'il existe
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Réactiver après le délai
+    timeoutRef.current = setTimeout(() => {
+      setIsTemporarilyDisabled(false);
+      timeoutRef.current = null;
+    }, disableDelay);
+  };
+
+  const isDisabled = disabled || loading || isTemporarilyDisabled;
 
   return (
     <button
       type="button"
-      onClick={onClick}
+      onClick={handleClick}
       disabled={isDisabled}
       className={`
         inline-flex items-center justify-center
