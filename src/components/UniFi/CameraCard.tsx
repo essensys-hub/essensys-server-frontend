@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, getCameraSnapshotUrl, isSonnetCamera } from '../../services/unifiApi';
+import type { Camera } from '../../services/unifiApi';
+import { getCameraSnapshotUrl, isSonnetCamera } from '../../services/unifiApi';
 import { VideoCameraIcon } from '@heroicons/react/24/outline';
 
 interface CameraCardProps {

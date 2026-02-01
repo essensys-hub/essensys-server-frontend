@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { VideoCameraIcon } from '@heroicons/react/24/outline';
 import { PageHeader } from '../components/UI';
 import { CameraCard } from '../components/UniFi';
-import { getCameras, Camera, isSonnetCamera } from '../services/unifiApi';
+import type { Camera } from '../services/unifiApi';
+import { getCameras, isSonnetCamera } from '../services/unifiApi';
 
 export const UniFiProtectPage: React.FC = () => {
   const [cameras, setCameras] = useState<Camera[]>([]);

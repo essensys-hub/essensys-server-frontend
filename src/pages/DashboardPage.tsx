@@ -14,7 +14,8 @@ import {
 import { CardSummary } from '../components/UI';
 import { CameraCard } from '../components/UniFi';
 import { useLastAction } from '../hooks';
-import { getCameras, Camera, isSonnetCamera } from '../services/unifiApi';
+import type { Camera } from '../services/unifiApi';
+import { getCameras, isSonnetCamera } from '../services/unifiApi';
 
 // Helper to format action details from backend response
 const formatActionInfo = (actionType: string, actionInfo: string): string => {
