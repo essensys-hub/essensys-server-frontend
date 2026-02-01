@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { MainLayout } from './layouts';
 import {
   DashboardPage,
+  UniFiProtectPage,
   SecurityPage,
   HeatingPage,
   LightingPage,
@@ -23,6 +24,7 @@ function App() {
             <Route element={<MainLayout />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/unifi-protect" element={<UniFiProtectPage />} />
               <Route path="/security" element={<SecurityPage />} />
               <Route path="/heating" element={<HeatingPage />} />
               <Route path="/lighting" element={<LightingPage />} />

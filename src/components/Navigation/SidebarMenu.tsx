@@ -10,6 +10,7 @@ import {
   CloudIcon,
   BellIcon,
   Cog6ToothIcon,
+  VideoCameraIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavItem {
@@ -20,6 +21,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { to: '/dashboard', icon: HomeIcon, label: 'Tableau de bord' },
+  { to: '/unifi-protect', icon: VideoCameraIcon, label: 'UniFi Protect' },
   { to: '/security', icon: ShieldCheckIcon, label: 'Sécurité' },
   { to: '/heating', icon: FireIcon, label: 'Chauffage' },
   { to: '/lighting', icon: LightBulbIcon, label: 'Éclairage' },

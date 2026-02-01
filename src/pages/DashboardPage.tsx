@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShieldCheckIcon,
   FireIcon,
@@ -9,9 +9,12 @@ import {
   BellIcon,
   Cog6ToothIcon,
   ArrowPathIcon,
+  VideoCameraIcon,
 } from '@heroicons/react/24/outline';
 import { CardSummary } from '../components/UI';
+import { CameraCard } from '../components/UniFi';
 import { useLastAction } from '../hooks';
+import { getCameras, Camera, isSonnetCamera } from '../services/unifiApi';
 
 // Helper to format action details from backend response
 const formatActionInfo = (actionType: string, actionInfo: string): string => {
@@ -22,6 +25,8 @@ const formatActionInfo = (actionType: string, actionInfo: string): string => {
 
 export const DashboardPage: React.FC = () => {
   const { lastAction, loading, error, refetch } = useLastAction();
+  const [cameras, setCameras] = useState<Camera[]>([]);
+  const [camerasLoading, setCamerasLoading] = useState(false);
 
   // Parse last action info - for now, we just show the last action from the backend
   // In the future, this could be expanded to track per-category actions
@@ -29,6 +34,29 @@ export const DashboardPage: React.FC = () => {
   const lastActionText = lastAction 
     ? formatActionInfo(lastAction.actionType, lastAction.actionInfo)
     : undefined;
+
+  // Fetch cameras on mount
+  useEffect(() => {
+    const fetchCameras = async () => {
+      try {
+        setCamerasLoading(true);
+        const camerasList = await getCameras();
+        setCameras(camerasList);
+      } catch (e) {
+        console.error('Failed to fetch cameras:', e);
+        // Don't show error on dashboard, just log it
+      } finally {
+        setCamerasLoading(false);
+      }
+    };
+
+    fetchCameras();
+  }, []);
+
+  // Get main cameras to display (Sonnet first, then first 3 others)
+  const sonnetCameras = cameras.filter(isSonnetCamera);
+  const otherCameras = cameras.filter((c) => !isSonnetCamera(c)).slice(0, 3);
+  const mainCameras = [...sonnetCameras, ...otherCameras].slice(0, 4);
 
   return (
     <div>
@@ -83,8 +111,45 @@ export const DashboardPage: React.FC = () => {
         </p>
       </div>
 
+      {/* Cameras Section */}
+      {mainCameras.length > 0 && (
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Caméras</h2>
+              <p className="text-sm text-gray-500">Vue en direct des caméras principales</p>
+            </div>
+            <a
+              href="/unifi-protect"
+              className="text-sm text-essensys-primary hover:text-essensys-primary-dark font-medium"
+            >
+              Voir toutes →
+            </a>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {mainCameras.map((camera) => (
+              <CameraCard
+                key={camera.id}
+                camera={camera}
+                refreshInterval={15000}
+                showDetails={false}
+                className="cursor-pointer hover:shadow-lg transition-shadow"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        <CardSummary
+          title="UniFi Protect"
+          description="Caméras de surveillance"
+          icon={VideoCameraIcon}
+          linkTo="/unifi-protect"
+          status={camerasLoading ? 'pending' : cameras.length > 0 ? 'idle' : 'error'}
+        />
+
         <CardSummary
           title="Sécurité"
           description="Alarme et protection"
