@@ -58,8 +58,8 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
     setIsTemporarilyDisabled(true);
     
     // Nettoyer le timeout précédent s'il existe
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
     }
 
     // Réactiver après le délai
