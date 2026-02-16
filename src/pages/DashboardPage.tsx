@@ -11,6 +11,7 @@ import {
   ArrowPathIcon,
   VideoCameraIcon,
   ServerStackIcon,
+  ChartBarIcon,
 } from '@heroicons/react/24/outline';
 import { CardSummary } from '../components/UI';
 import { CameraCard } from '../components/UniFi';
@@ -221,6 +222,14 @@ export const DashboardPage: React.FC = () => {
           description="Services, logs & mises à jour"
           icon={ServerStackIcon}
           externalLink={`${window.location.protocol}//${window.location.hostname}:9100`}
+          status="idle"
+        />
+
+        <CardSummary
+          title="Prometheus"
+          description="Monitoring & alertes"
+          icon={ChartBarIcon}
+          externalLink={`${window.location.protocol}//${window.location.hostname}:9092`}
           status="idle"
         />
       </div>

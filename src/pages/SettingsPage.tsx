@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon, ServerStackIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon, ServerStackIcon, ArrowTopRightOnSquareIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 import { useTheme } from '../context/ThemeContext';
 import type { Theme } from '../context/ThemeContext';
@@ -239,6 +239,64 @@ export const SettingsPage: React.FC = () => {
               Ouvrir le Control Plane
               <ArrowTopRightOnSquareIcon className="w-4 h-4" />
             </a>
+          </div>
+        </ControlCard>
+
+        {/* Prometheus Monitoring */}
+        <ControlCard
+          title="Prometheus Monitoring"
+          description="Métriques système, alertes et supervision des conteneurs"
+        >
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+              <ChartBarIcon className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-purple-800">Stack de monitoring</p>
+                <p className="text-xs text-purple-700 mt-1">
+                  Prometheus collecte les métriques système (CPU, RAM, disque), Docker (état des conteneurs)
+                  et applicatives (latence API, requêtes). Alertmanager gère les notifications d'alertes.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-500">Prometheus</span>
+                <span className="font-medium text-gray-900">Port 9092</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-500">Alertmanager</span>
+                <span className="font-medium text-gray-900">Port 9093</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-gray-100">
+                <span className="text-gray-500">Node Exporter</span>
+                <span className="font-medium text-gray-900">Port 9101</span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-gray-500">cAdvisor</span>
+                <span className="font-medium text-gray-900">Port 9095</span>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <a
+                href={`${window.location.protocol}//${window.location.hostname}:9092`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                <ChartBarIcon className="w-4 h-4" />
+                Prometheus
+                <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+              </a>
+              <a
+                href={`${window.location.protocol}//${window.location.hostname}:9093`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 transition-colors"
+              >
+                Alertmanager
+                <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+              </a>
+            </div>
           </div>
         </ControlCard>
 
