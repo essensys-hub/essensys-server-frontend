@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon, ServerStackIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 import { useTheme } from '../context/ThemeContext';
 import type { Theme } from '../context/ThemeContext';
@@ -179,7 +179,7 @@ export const SettingsPage: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-green-800">Authentification active</p>
                 <p className="text-xs text-green-700 mt-1">
-                  L'accès au système est protégé par authentification HTTP Basic au niveau du reverse-proxy Caddy.
+                  L'accès au système est protégé par authentification HTTP Basic au niveau du reverse-proxy Traefik.
                 </p>
               </div>
             </div>
@@ -187,7 +187,7 @@ export const SettingsPage: React.FC = () => {
             <div className="space-y-2 text-sm">
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-500">Type d'authentification</span>
-                <span className="font-medium text-gray-900">HTTP Basic (Caddy)</span>
+                <span className="font-medium text-gray-900">HTTP Basic (Traefik)</span>
               </div>
               <div className="flex justify-between py-2 border-b border-gray-100">
                 <span className="text-gray-500">Méthode de hash</span>
@@ -213,12 +213,41 @@ export const SettingsPage: React.FC = () => {
           </div>
         </ControlCard>
 
+        {/* Control Plane */}
+        <ControlCard
+          title="Control Plane"
+          description="Gestion des services Docker, logs, mises à jour et backups"
+        >
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <ServerStackIcon className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-800">Interface d'administration</p>
+                <p className="text-xs text-blue-700 mt-1">
+                  Gérez les conteneurs Docker, consultez les logs en temps réel, 
+                  vérifiez les mises à jour et gérez les backups du système.
+                </p>
+              </div>
+            </div>
+            <a
+              href={`${window.location.protocol}//${window.location.hostname}:9100`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-essensys-primary text-white text-sm font-medium rounded-lg hover:bg-essensys-primary-dark transition-colors"
+            >
+              <ServerStackIcon className="w-4 h-4" />
+              Ouvrir le Control Plane
+              <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+            </a>
+          </div>
+        </ControlCard>
+
         {/* System Info */}
         <ControlCard title="Informations système">
           <div className="space-y-3">
             <div className="flex justify-between py-2 border-b border-gray-100">
               <span className="text-sm text-gray-500">Version application</span>
-              <span className="text-sm font-medium text-gray-900">1.2.1</span>
+              <span className="text-sm font-medium text-gray-900">1.3.0</span>
             </div>
             <div className="flex justify-between py-2 border-b border-gray-100">
               <span className="text-sm text-gray-500">Mode de connexion</span>
@@ -234,7 +263,7 @@ export const SettingsPage: React.FC = () => {
             </div>
             <div className="flex justify-between py-2">
               <span className="text-sm text-gray-500">Reverse Proxy</span>
-              <span className="text-sm font-medium text-gray-900">Caddy</span>
+              <span className="text-sm font-medium text-gray-900">Nginx + Traefik</span>
             </div>
           </div>
         </ControlCard>
@@ -243,9 +272,9 @@ export const SettingsPage: React.FC = () => {
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h4 className="font-medium text-blue-800 mb-1">À propos de la sécurité</h4>
           <p className="text-sm text-blue-700">
-            L'authentification est gérée au niveau du reverse-proxy Caddy.
+            L'authentification est gérée au niveau du reverse-proxy Traefik.
             En accès WAN, un identifiant et mot de passe sont toujours requis.
-            En LAN, l'accès sans authentification peut être activé via <code className="bg-blue-100 px-1 rounded">essensys-auth lan-noauth on</code>.
+            En LAN, l'accès est ouvert sans authentification.
           </p>
         </div>
       </div>

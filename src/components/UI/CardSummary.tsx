@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRightIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { ChevronRightIcon, ClockIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 
 interface CardSummaryProps {
   title: string;
@@ -8,7 +8,8 @@ interface CardSummaryProps {
   lastAction?: string;
   lastActionDate?: Date;
   status?: 'idle' | 'pending' | 'error';
-  linkTo: string;
+  linkTo?: string;
+  externalLink?: string;
   description?: string;
 }
 
@@ -36,62 +37,106 @@ const formatDate = (date: Date): string => {
   });
 };
 
+const CardContent: React.FC<{
+  title: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  lastAction?: string;
+  lastActionDate?: Date;
+  status: 'idle' | 'pending' | 'error';
+  description?: string;
+  isExternal?: boolean;
+}> = ({ title, icon: Icon, lastAction, lastActionDate, status, description, isExternal }) => (
+  <div className="p-5">
+    <div className="flex items-start justify-between">
+      <div className="flex items-center">
+        <div className={`p-2.5 rounded-lg ${statusColors[status]}`}>
+          <Icon className="w-6 h-6" />
+        </div>
+        <div className="ml-3">
+          <h3 className="text-base font-semibold text-gray-900">{title}</h3>
+          {description && (
+            <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+          )}
+        </div>
+      </div>
+      {isExternal ? (
+        <ArrowTopRightOnSquareIcon className="w-5 h-5 text-gray-400 group-hover:text-essensys-primary transition-colors" />
+      ) : (
+        <ChevronRightIcon className="w-5 h-5 text-gray-400 group-hover:text-essensys-primary transition-colors" />
+      )}
+    </div>
+
+    {lastAction && (
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <div className="flex items-center text-sm">
+          <ClockIcon className="w-4 h-4 text-gray-400 mr-1.5 flex-shrink-0" />
+          <span className="text-gray-600 truncate">{lastAction}</span>
+          {lastActionDate && (
+            <span className="ml-auto text-xs text-gray-400 flex-shrink-0">
+              {formatDate(lastActionDate)}
+            </span>
+          )}
+        </div>
+        <p className="mt-1.5 text-xs text-gray-400 italic">
+          État non garanti (boucle ouverte)
+        </p>
+      </div>
+    )}
+
+    {!lastAction && (
+      <div className="mt-4 pt-4 border-t border-gray-100">
+        <p className="text-sm text-gray-400">Aucune action récente</p>
+      </div>
+    )}
+  </div>
+);
+
 export const CardSummary: React.FC<CardSummaryProps> = ({
   title,
-  icon: Icon,
+  icon,
   lastAction,
   lastActionDate,
   status = 'idle',
   linkTo,
+  externalLink,
   description,
 }) => {
+  const cardClass = "block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 overflow-hidden group";
+
+  if (externalLink) {
+    return (
+      <a
+        href={externalLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cardClass}
+      >
+        <CardContent
+          title={title}
+          icon={icon}
+          lastAction={lastAction}
+          lastActionDate={lastActionDate}
+          status={status}
+          description={description}
+          isExternal
+        />
+      </a>
+    );
+  }
+
   return (
     <Link
-      to={linkTo}
-      className="block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 overflow-hidden group"
+      to={linkTo || '/'}
+      className={cardClass}
     >
-      <div className="p-5">
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center">
-            <div className={`p-2.5 rounded-lg ${statusColors[status]}`}>
-              <Icon className="w-6 h-6" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-              {description && (
-                <p className="text-xs text-gray-500 mt-0.5">{description}</p>
-              )}
-            </div>
-          </div>
-          <ChevronRightIcon className="w-5 h-5 text-gray-400 group-hover:text-essensys-primary transition-colors" />
-        </div>
-
-        {/* Last Action */}
-        {lastAction && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="flex items-center text-sm">
-              <ClockIcon className="w-4 h-4 text-gray-400 mr-1.5 flex-shrink-0" />
-              <span className="text-gray-600 truncate">{lastAction}</span>
-              {lastActionDate && (
-                <span className="ml-auto text-xs text-gray-400 flex-shrink-0">
-                  {formatDate(lastActionDate)}
-                </span>
-              )}
-            </div>
-            <p className="mt-1.5 text-xs text-gray-400 italic">
-              État non garanti (boucle ouverte)
-            </p>
-          </div>
-        )}
-
-        {/* No action yet */}
-        {!lastAction && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-400">Aucune action récente</p>
-          </div>
-        )}
-      </div>
+      <CardContent
+        title={title}
+        icon={icon}
+        lastAction={lastAction}
+        lastActionDate={lastActionDate}
+        status={status}
+        description={description}
+      />
     </Link>
   );
 };

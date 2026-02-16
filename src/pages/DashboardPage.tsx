@@ -10,6 +10,7 @@ import {
   Cog6ToothIcon,
   ArrowPathIcon,
   VideoCameraIcon,
+  ServerStackIcon,
 } from '@heroicons/react/24/outline';
 import { CardSummary } from '../components/UI';
 import { CameraCard } from '../components/UniFi';
@@ -212,6 +213,14 @@ export const DashboardPage: React.FC = () => {
           description="Configuration système"
           icon={Cog6ToothIcon}
           linkTo="/settings"
+          status="idle"
+        />
+
+        <CardSummary
+          title="Control Plane"
+          description="Services, logs & mises à jour"
+          icon={ServerStackIcon}
+          externalLink={`${window.location.protocol}//${window.location.hostname}:9100`}
           status="idle"
         />
       </div>
