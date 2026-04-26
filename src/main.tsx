@@ -3,6 +3,11 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
+if (import.meta.env.VITE_DEMO_MODE === 'true') {
+  const { setupMocks } = await import('./mockFetch');
+  setupMocks();
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
