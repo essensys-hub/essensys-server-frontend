@@ -102,6 +102,39 @@ export const sendInjection = async (k: number, v: string): Promise<void> => {
     }
 };
 
+// Reads back exchange table values reported by the firmware (e.g. shutter travel times 566-589).
+// Returns a map index -> value; indices never reported by the firmware are absent.
+export const getExchangeValues = async (keys: number[]): Promise<Record<number, string>> => {
+    const backendUrl = getBackendUrl();
+    const apiUrl = backendUrl === ''
+        ? `/api/admin/exchange?keys=${keys.join(',')}`
+        : `${backendUrl}/api/admin/exchange?keys=${keys.join(',')}`;
+
+    console.log(`[EXCHANGE] Lecture des indices: ${keys.join(',')} via ${apiUrl}`);
+
+    const response = await fetch(apiUrl, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    handleAuthError(response);
+
+    if (!response.ok) {
+        console.error(`[EXCHANGE] Échec de la lecture: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to read exchange values: ${response.statusText}`);
+    }
+
+    const data: { values: Array<{ k: number; v: string }> } = await response.json();
+    const result: Record<number, string> = {};
+    for (const kv of data.values ?? []) {
+        result[kv.k] = kv.v;
+    }
+    console.log(`[EXCHANGE] Valeurs reçues:`, result);
+    return result;
+};
+
 export const sendBatchInjections = async (state: DashboardState, mappings: LegacyMapping[]): Promise<void> => {
     const backendUrl = getBackendUrl();
     const actions: InjectionAction[] = [];

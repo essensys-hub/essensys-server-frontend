@@ -24,6 +24,16 @@ export function setupMocks() {
             return jsonResponse({ success: true, message: 'Mock injected' });
         }
 
+        if (url.includes('/api/admin/exchange') && method === 'GET') {
+            // Temps de course des volets : valeurs de démonstration (secondes)
+            const keysParam = new URL(url, window.location.origin).searchParams.get('keys') || '';
+            const values = keysParam
+                .split(',')
+                .filter((k) => k !== '')
+                .map((k) => ({ k: parseInt(k, 10), v: '25' }));
+            return jsonResponse({ values });
+        }
+
         if (url.includes('/api/web/actions') && method === 'POST') {
             return jsonResponse({ success: true, message: 'Mock action sent' });
         }
