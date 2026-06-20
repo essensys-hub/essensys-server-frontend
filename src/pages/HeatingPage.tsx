@@ -2,11 +2,16 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { FireIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 import { HeatingScheduleGrid } from '../components/Heating/HeatingScheduleGrid';
-import { HEATING_ZONES, scheduleKeyRange } from '../heating/constants';
+import { InjectionSaveConsole } from '../components/Heating/InjectionSaveConsole';
+import { HEATING_ZONES, MAX_FIRMWARE_PARAMS_PER_ACTION, scheduleKeyRange } from '../heating/constants';
 import type { HeatingZoneConfig } from '../heating/constants';
+import type { InjectionLogEntry, InjectionSaveProgress } from '../heating/injectionProgress';
+import { logsFromProgressEvent, progressFromEvent } from '../heating/injectionProgress';
+import type { ScheduleSyncEvent } from '../heating/scheduleSync';
+import { formatSyncProgressLabel, logsFromSyncEvent } from '../heating/scheduleSync';
 import type { ScheduleGrid } from '../heating/scheduleCodec';
 import { diffScheduleInjections, emptyScheduleGrid, gridFromExchange } from '../heating/scheduleCodec';
-import { getExchangeValues, sendInjection, sendInjectionBatch } from '../services/legacyApi';
+import { getExchangeValues, sendInjection, sendInjectionBatch, syncScheduleFromArmoire } from '../services/legacyApi';
 
 export const HeatingPage: React.FC = () => {
   const [activeZoneId, setActiveZoneId] = useState(HEATING_ZONES[0].id);
@@ -14,10 +19,16 @@ export const HeatingPage: React.FC = () => {
   const [baseline, setBaseline] = useState<ScheduleGrid>(emptyScheduleGrid());
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [scheduleSaving, setScheduleSaving] = useState(false);
+  const [scheduleSyncing, setScheduleSyncing] = useState(false);
   const [showImmediate, setShowImmediate] = useState(false);
   const [loadingMode, setLoadingMode] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [saveLogs, setSaveLogs] = useState<InjectionLogEntry[]>([]);
+  const [saveProgress, setSaveProgress] = useState<InjectionSaveProgress | null>(null);
+  const [consoleOpen, setConsoleOpen] = useState(false);
+  const [consoleMode, setConsoleMode] = useState<'save' | 'sync'>('save');
+  const [syncProgressLabel, setSyncProgressLabel] = useState<string | null>(null);
 
   const zone = HEATING_ZONES.find((z) => z.id === activeZoneId) ?? HEATING_ZONES[0];
 
@@ -42,16 +53,91 @@ export const HeatingPage: React.FC = () => {
     loadSchedule(zone);
   }, [zone.id, loadSchedule]);
 
-  const handleSaveSchedule = async () => {
-    setScheduleSaving(true);
+  const appendConsoleLogs = useCallback((entries: InjectionLogEntry[]) => {
+    setSaveLogs((prev) => [...prev, ...entries]);
+  }, []);
+
+  const appendSaveEvent = useCallback((event: Parameters<typeof logsFromProgressEvent>[0]) => {
+    appendConsoleLogs(logsFromProgressEvent(event));
+    setSaveProgress((prev) => progressFromEvent(event, prev));
+  }, [appendConsoleLogs]);
+
+  const appendSyncEvent = useCallback((event: ScheduleSyncEvent) => {
+    appendConsoleLogs(logsFromSyncEvent(event));
+    if (event.type === 'waiting') {
+      setSaveProgress({
+        currentChunk: event.chunksCompleted,
+        totalChunks: event.chunksTotal,
+        totalParams: event.total,
+        status: 'running',
+      });
+      setSyncProgressLabel(formatSyncProgressLabel(event.received, event.total, true));
+    }
+    if (event.type === 'loaded' || event.type === 'done') {
+      setSaveProgress({
+        currentChunk: event.received,
+        totalChunks: event.total,
+        totalParams: event.total,
+        status: event.type === 'done' && !event.complete ? 'error' : 'success',
+      });
+      setSyncProgressLabel(formatSyncProgressLabel(event.received, event.total, false));
+    }
+  }, [appendConsoleLogs]);
+
+  const handleSyncSchedule = async () => {
+    setScheduleSyncing(true);
+    setConsoleMode('sync');
+    setConsoleOpen(true);
     setSuccess(null);
     setError(null);
+    setSaveLogs([]);
+    setSaveProgress(null);
+    setSyncProgressLabel(null);
+    try {
+      const { values, received, total } = await syncScheduleFromArmoire(
+        zone.scheduleStartIndex,
+        zone.scheduleByteCount,
+        zone.name,
+        appendSyncEvent,
+      );
+      const loaded = gridFromExchange(values, zone.scheduleStartIndex, zone.scheduleByteCount);
+      setGrid(loaded);
+      setBaseline(loaded.map((row) => [...row]));
+      if (received >= total) {
+        setSuccess(`Planning synchronisé depuis l'armoire — ${zone.name} (${total} octets)`);
+      } else {
+        setError(
+          `Sync partielle — ${received}/${total} octets pour ${zone.name}. Relancer Sync armoire ou vérifier que l'armoire est en ligne.`,
+        );
+      }
+    } catch (e) {
+      console.error(e);
+      appendSyncEvent({ type: 'error', message: e instanceof Error ? e.message : 'Erreur réseau' });
+      setError('Impossible de synchroniser le planning depuis l\'armoire.');
+    } finally {
+      setScheduleSyncing(false);
+    }
+  };
+
+  const handleSaveSchedule = async () => {
+    setScheduleSaving(true);
+    setConsoleMode('save');
+    setSuccess(null);
+    setError(null);
+    setSaveLogs([]);
+    setSaveProgress(null);
+    setSyncProgressLabel(null);
+    setConsoleOpen(true);
     try {
       const items = diffScheduleInjections(grid, baseline, zone.scheduleStartIndex, zone.scheduleByteCount);
       if (items.length === 0) return;
-      await sendInjectionBatch(items);
+      const { totalParams, chunkCount } = await sendInjectionBatch(items, appendSaveEvent);
       setBaseline(grid.map((row) => [...row]));
-      setSuccess(`Planning enregistré — ${zone.name} (${items.length} octet${items.length > 1 ? 's' : ''} modifié${items.length > 1 ? 's' : ''})`);
+      const chunkLabel =
+        chunkCount > 1 ? ` — ${chunkCount} envois armoire (max 30/octet)` : '';
+      setSuccess(
+        `Planning enregistré — ${zone.name} (${totalParams} octet${totalParams > 1 ? 's' : ''} modifié${totalParams > 1 ? 's' : ''}${chunkLabel})`,
+      );
     } catch (e) {
       console.error(e);
       setError('Échec envoi du planning vers l\'armoire.');
@@ -100,6 +186,11 @@ export const HeatingPage: React.FC = () => {
         </div>
       )}
 
+      <p className="mb-4 text-xs text-gray-500 leading-relaxed">
+        Synchronisation armoire : après enregistrement, laisser ~20&nbsp;s par envoi (cycle firmware).
+        Les changements depuis le portail distant mettent à jour l&apos;armoire locale automatiquement.
+      </p>
+
       {/* Sélecteur de zone */}
       <div className="mb-4 flex flex-wrap gap-2">
         {HEATING_ZONES.map((z) => (
@@ -125,8 +216,21 @@ export const HeatingPage: React.FC = () => {
         onChange={setGrid}
         onSave={handleSaveSchedule}
         onCancel={handleCancelSchedule}
+        onSync={handleSyncSchedule}
         saving={scheduleSaving}
+        syncing={scheduleSyncing}
         loading={scheduleLoading}
+        saveProgress={saveProgress}
+      />
+
+      <InjectionSaveConsole
+        progress={saveProgress}
+        logs={saveLogs}
+        visible={consoleOpen}
+        onToggle={() => setConsoleOpen((v) => !v)}
+        title={consoleMode === 'sync' ? 'Console sync armoire' : 'Console sauvegarde'}
+        subtitle={consoleMode === 'sync' ? 'lecture planning firmware' : `limite ${MAX_FIRMWARE_PARAMS_PER_ACTION}/envoi`}
+        progressLabel={consoleMode === 'sync' && syncProgressLabel ? syncProgressLabel : undefined}
       />
 
       {/* Modes immédiats (repliable) */}
@@ -152,7 +256,7 @@ export const HeatingPage: React.FC = () => {
                   variant={mode.value === '16' ? 'secondary' : 'primary'}
                   onClick={() => handleImmediateMode(mode.value, mode.label)}
                   loading={loadingMode === mode.value}
-                  disabled={loadingMode !== null || scheduleSaving}
+                  disabled={loadingMode !== null || scheduleSaving || scheduleSyncing}
                   size="sm"
                   className="w-full"
                 />

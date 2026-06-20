@@ -11,6 +11,7 @@ import {
   BellIcon,
   Cog6ToothIcon,
   VideoCameraIcon,
+  BoltIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavItem {
@@ -25,6 +26,7 @@ const navItems: NavItem[] = [
   { to: '/security', icon: ShieldCheckIcon, label: 'Sécurité' },
   { to: '/heating', icon: FireIcon, label: 'Chauffage' },
   { to: '/lighting', icon: LightBulbIcon, label: 'Éclairage' },
+  { to: '/scenarios', icon: BoltIcon, label: 'Scénarios' },
   { to: '/shutters', icon: ViewColumnsIcon, label: 'Volets & Stores' },
   { to: '/water-heater', icon: BeakerIcon, label: 'Cumulus' },
   { to: '/sprinkler', icon: CloudIcon, label: 'Arrosage' },

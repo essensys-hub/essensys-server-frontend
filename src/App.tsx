@@ -11,6 +11,7 @@ import {
   SprinklerPage,
   NotificationsPage,
   SettingsPage,
+  ScenariosPage,
 } from './pages';
 import { DashboardProvider } from './context/DashboardContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -28,6 +29,7 @@ function App() {
               <Route path="/security" element={<SecurityPage />} />
               <Route path="/heating" element={<HeatingPage />} />
               <Route path="/lighting" element={<LightingPage />} />
+              <Route path="/scenarios" element={<ScenariosPage />} />
               <Route path="/shutters" element={<ShuttersPage />} />
               <Route path="/water-heater" element={<WaterHeaterPage />} />
               <Route path="/sprinkler" element={<SprinklerPage />} />

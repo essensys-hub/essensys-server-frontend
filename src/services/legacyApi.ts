@@ -47,32 +47,85 @@ interface InjectionAction {
     v: string;
 }
 
-/** Envoie plusieurs indices dans une seule action (planning chauffage, etc.). */
-export const sendInjectionBatch = async (items: Array<{ k: number; v: string }>): Promise<void> => {
-    if (items.length === 0) return;
+import { chunkInjectionParams } from '../heating/injectLimits';
+import type { InjectionProgressEvent } from '../heating/injectionProgress';
+import type { HeatingSyncStatus, ScheduleSyncEvent } from '../heating/scheduleSync';
+import { pollHeatingSync } from '../heating/scheduleSync';
 
-    const backendUrl = getBackendUrl();
-    const apiUrl = backendUrl === ''
-        ? `/api/admin/inject`
-        : `${backendUrl}/api/admin/inject`;
+export interface InjectionBatchResult {
+  totalParams: number;
+  chunkCount: number;
+}
 
-    console.log(`[BATCH INJECTION] ${items.length} param(s) via ${apiUrl}`);
+export type InjectionBatchProgressHandler = (event: InjectionProgressEvent) => void;
+
+/** Envoie plusieurs indices (découpés en actions ≤30 params pour le firmware). */
+export const sendInjectionBatch = async (
+  items: Array<{ k: number; v: string }>,
+  onProgress?: InjectionBatchProgressHandler,
+): Promise<InjectionBatchResult> => {
+  if (items.length === 0) {
+    return { totalParams: 0, chunkCount: 0 };
+  }
+
+  const backendUrl = getBackendUrl();
+  const apiUrl = backendUrl === ''
+    ? `/api/admin/inject`
+    : `${backendUrl}/api/admin/inject`;
+
+  const chunks = chunkInjectionParams(items);
+  console.log(`[BATCH INJECTION] ${items.length} param(s) → ${chunks.length} envoi(s) via ${apiUrl}`);
+  onProgress?.({ type: 'start', totalParams: items.length, chunkCount: chunks.length });
+
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    const chunkIndex = i + 1;
+    const keys = chunk.map(({ k }) => k);
+    const indexMin = Math.min(...keys);
+    const indexMax = Math.max(...keys);
+
+    onProgress?.({
+      type: 'sending',
+      chunkIndex,
+      chunkCount: chunks.length,
+      paramsInChunk: chunk.length,
+      indexMin,
+      indexMax,
+    });
 
     const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(items.map(({ k, v }) => ({ k, v: String(v) }))),
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(chunk.map(({ k, v }) => ({ k, v: String(v) }))),
     });
 
     handleAuthError(response);
 
     if (!response.ok) {
-        const errorText = await response.text().catch(() => '');
-        console.error(`[BATCH INJECTION] Échec: ${response.status}`, errorText);
-        throw new Error(errorText || `Batch injection failed (${response.status})`);
+      const errorText = await response.text().catch(() => '');
+      console.error(`[BATCH INJECTION] Échec envoi ${chunkIndex}/${chunks.length}: ${response.status}`, errorText);
+      onProgress?.({
+        type: 'error',
+        chunkIndex,
+        chunkCount: chunks.length,
+        message: errorText || `HTTP ${response.status}`,
+      });
+      throw new Error(errorText || `Batch injection failed (${response.status})`);
     }
+
+    onProgress?.({
+      type: 'success',
+      chunkIndex,
+      chunkCount: chunks.length,
+      paramsInChunk: chunk.length,
+      httpStatus: response.status,
+    });
+  }
+
+  onProgress?.({ type: 'done', totalParams: items.length, chunkCount: chunks.length });
+  return { totalParams: items.length, chunkCount: chunks.length };
 };
 
 export const sendInjection = async (k: number, v: string): Promise<void> => {
@@ -161,6 +214,85 @@ export const getExchangeValues = async (keys: number[]): Promise<Record<number, 
     }
     console.log(`[EXCHANGE] Valeurs reçues:`, result);
     return result;
+};
+
+const adminApiBase = (): string => {
+  const backendUrl = getBackendUrl();
+  return backendUrl === '' ? '' : backendUrl;
+};
+
+export const startHeatingSync = async (
+  startIndex: number,
+  byteCount: number,
+): Promise<{ chunksTotal: number; sync: HeatingSyncStatus }> => {
+  const base = adminApiBase();
+  const apiUrl = `${base}/api/admin/heating/sync`;
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ startIndex, byteCount }),
+  });
+  handleAuthError(response);
+  if (!response.ok) {
+    const text = await response.text().catch(() => '');
+    throw new Error(text || `Heating sync start failed (${response.status})`);
+  }
+  const data: { sync: HeatingSyncStatus } = await response.json();
+  return { chunksTotal: data.sync.chunksTotal, sync: data.sync };
+};
+
+export const getHeatingSyncStatus = async (
+  startIndex: number,
+  byteCount: number,
+): Promise<HeatingSyncStatus> => {
+  const base = adminApiBase();
+  const apiUrl = `${base}/api/admin/heating/sync/status?startIndex=${startIndex}&byteCount=${byteCount}`;
+  const response = await fetch(apiUrl, { headers: { 'Content-Type': 'application/json' } });
+  handleAuthError(response);
+  if (!response.ok) {
+    throw new Error(`Heating sync status failed (${response.status})`);
+  }
+  return response.json();
+};
+
+/** Demande à l'armoire de remonter le planning via rotation serverinfos, puis lit exchange. */
+export const syncScheduleFromArmoire = async (
+  startIndex: number,
+  byteCount: number,
+  zoneName: string,
+  onProgress?: (event: ScheduleSyncEvent) => void,
+): Promise<{ values: Record<number, string>; received: number; total: number }> => {
+  const endIndex = startIndex + byteCount - 1;
+  const { chunksTotal } = await startHeatingSync(startIndex, byteCount);
+  onProgress?.({
+    type: 'start',
+    zoneName,
+    startIndex,
+    endIndex,
+    chunksTotal,
+  });
+
+  const finalStatus = await pollHeatingSync(
+    () => getHeatingSyncStatus(startIndex, byteCount),
+    (event) => onProgress?.(event),
+  );
+
+  const keys = Array.from({ length: byteCount }, (_, i) => startIndex + i);
+  const values = await getExchangeValues(keys);
+  const received = Object.keys(values).length;
+  const missing = byteCount - received;
+  const sampleKeys = keys.filter((k) => k in values).slice(0, 3);
+  const sample = sampleKeys.map((k) => `${k}=${values[k]}`).join(', ');
+
+  onProgress?.({ type: 'loaded', received, total: byteCount, missing, sample });
+  onProgress?.({
+    type: 'done',
+    received: Math.max(received, finalStatus.received),
+    total: byteCount,
+    complete: received >= byteCount,
+  });
+
+  return { values, received, total: byteCount };
 };
 
 export const sendBatchInjections = async (state: DashboardState, mappings: LegacyMapping[]): Promise<void> => {

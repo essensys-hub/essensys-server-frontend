@@ -7,4 +7,5 @@ export { WaterHeaterPage } from './WaterHeaterPage';
 export { SprinklerPage } from './SprinklerPage';
 export { NotificationsPage } from './NotificationsPage';
 export { SettingsPage } from './SettingsPage';
+export { ScenariosPage } from './ScenariosPage';
 export { UniFiProtectPage } from './UniFiProtectPage';

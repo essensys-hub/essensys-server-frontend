@@ -25,6 +25,8 @@ export const SCHEDULE_MODE_MAP = Object.fromEntries(
 export const DAY_LABELS = ['Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa', 'Di'] as const;
 export const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
+export { MAX_FIRMWARE_PARAMS_PER_ACTION } from './injectLimits';
+
 export interface HeatingModeOption {
   value: string;
   label: string;

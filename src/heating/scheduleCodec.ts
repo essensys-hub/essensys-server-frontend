@@ -4,7 +4,7 @@ import { DAY_LABELS, HOURS } from './constants';
 export type ScheduleGrid = ScheduleConsigne[][];
 
 export const emptyScheduleGrid = (): ScheduleGrid =>
-  DAY_LABELS.map(() => HOURS.map(() => 1 as ScheduleConsigne));
+  DAY_LABELS.map(() => HOURS.map(() => 0 as ScheduleConsigne));
 
 const clampConsigne = (n: number): ScheduleConsigne => {
   if (n < 0) return 0;
@@ -40,8 +40,8 @@ export const gridFromExchange = (
     const hour = linear % 24;
     if (day >= 7) break;
     const key = startIndex + byteIndex;
-    const raw = parseInt(values[key] ?? '17', 10);
-    const byteVal = Number.isNaN(raw) ? 0x11 : raw;
+    const raw = parseInt(values[key] ?? '0', 10);
+    const byteVal = Number.isNaN(raw) ? 0 : raw;
     grid[day][hour] = clampConsigne(byteVal & 0x07);
     if (hour + 1 < 24) {
       grid[day][hour + 1] = clampConsigne((byteVal >> 4) & 0x07);

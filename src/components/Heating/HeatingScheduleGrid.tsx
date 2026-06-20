@@ -1,8 +1,11 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import type { HeatingZoneConfig, ScheduleConsigne } from '../../heating/constants';
-import { DAY_LABELS, HOURS, SCHEDULE_MODES, SCHEDULE_MODE_MAP } from '../../heating/constants';
+import { DAY_LABELS, HOURS, MAX_FIRMWARE_PARAMS_PER_ACTION, SCHEDULE_MODES, SCHEDULE_MODE_MAP } from '../../heating/constants';
+import { formatInjectionLimitHint } from '../../heating/injectLimits';
+import type { InjectionSaveProgress } from '../../heating/injectionProgress';
+import { formatProgressLabel } from '../../heating/injectionProgress';
 import type { ScheduleGrid } from '../../heating/scheduleCodec';
-import { copyDayToAll, gridsEqual } from '../../heating/scheduleCodec';
+import { copyDayToAll, diffScheduleInjections, gridsEqual } from '../../heating/scheduleCodec';
 
 interface HeatingScheduleGridProps {
   zone: HeatingZoneConfig;
@@ -11,8 +14,11 @@ interface HeatingScheduleGridProps {
   onChange: (grid: ScheduleGrid) => void;
   onSave: () => void;
   onCancel: () => void;
+  onSync?: () => void;
   saving: boolean;
+  syncing?: boolean;
   loading: boolean;
+  saveProgress?: InjectionSaveProgress | null;
 }
 
 export const HeatingScheduleGrid: React.FC<HeatingScheduleGridProps> = ({
@@ -22,14 +28,23 @@ export const HeatingScheduleGrid: React.FC<HeatingScheduleGridProps> = ({
   onChange,
   onSave,
   onCancel,
+  onSync,
   saving,
+  syncing = false,
   loading,
+  saveProgress,
 }) => {
   const [paintMode, setPaintMode] = useState<ScheduleConsigne>(1);
   const [applySourceDay, setApplySourceDay] = useState(0);
   const painting = useRef(false);
 
   const dirty = !gridsEqual(grid, baseline);
+
+  const pendingInjections = useMemo(
+    () => diffScheduleInjections(grid, baseline, zone.scheduleStartIndex, zone.scheduleByteCount),
+    [grid, baseline, zone.scheduleStartIndex, zone.scheduleByteCount],
+  );
+  const pendingHint = formatInjectionLimitHint(pendingInjections.length);
 
   const paintCell = useCallback(
     (day: number, hour: number) => {
@@ -64,9 +79,12 @@ export const HeatingScheduleGrid: React.FC<HeatingScheduleGridProps> = ({
       onPointerUp={stopPainting}
       onPointerLeave={stopPainting}
     >
-      <h3 className="text-sm sm:text-base font-semibold uppercase tracking-wide text-center mb-4">
+      <h3 className="text-sm sm:text-base font-semibold uppercase tracking-wide text-center mb-1">
         {zone.scheduleTitle}
       </h3>
+      <p className="text-[10px] sm:text-xs text-slate-400 text-center mb-4">
+        Limite armoire : {MAX_FIRMWARE_PARAMS_PER_ACTION} octets par envoi — au-delà, envoi automatique en plusieurs fois.
+      </p>
 
       {loading ? (
         <div className="h-48 flex items-center justify-center text-slate-400 text-sm">
@@ -153,16 +171,35 @@ export const HeatingScheduleGrid: React.FC<HeatingScheduleGridProps> = ({
           </button>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col items-end gap-1">
+          {dirty && pendingHint && (
+            <span className="text-xs text-amber-300 text-right max-w-[14rem] sm:max-w-none">
+              {pendingHint}
+            </span>
+          )}
+          {saving && saveProgress && saveProgress.status === 'running' && saveProgress.totalChunks > 1 && (
+            <span className="text-[10px] text-amber-300 text-right max-w-[14rem] sm:max-w-none">
+              {formatProgressLabel(saveProgress)}
+            </span>
+          )}
+          <div className="flex items-center gap-2">
           {dirty && (
-            <span className="text-xs text-amber-300 hidden sm:inline">
-              Modifications non enregistrées
+            <span className="text-xs text-slate-400 hidden md:inline">
+              Non enregistré
             </span>
           )}
           <button
             type="button"
+            onClick={onSync}
+            disabled={syncing || saving || loading || !onSync}
+            className="px-3 py-1.5 text-sm rounded-lg border border-cyan-600 text-cyan-300 hover:bg-cyan-950 disabled:opacity-40"
+          >
+            {syncing ? 'Sync…' : 'Sync armoire'}
+          </button>
+          <button
+            type="button"
             onClick={onCancel}
-            disabled={saving || !dirty}
+            disabled={saving || syncing || !dirty}
             className="px-3 py-1.5 text-sm rounded-lg border border-slate-500 text-slate-300 disabled:opacity-40"
           >
             Annuler
@@ -170,11 +207,16 @@ export const HeatingScheduleGrid: React.FC<HeatingScheduleGridProps> = ({
           <button
             type="button"
             onClick={onSave}
-            disabled={saving || !dirty || loading}
-            className="px-4 py-1.5 text-sm rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 font-medium"
+            disabled={saving || syncing || !dirty || loading}
+            className="px-4 py-1.5 text-sm rounded-lg bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 font-medium min-w-[7.5rem]"
           >
-            {saving ? 'Envoi…' : 'Enregistrer'}
+            {saving && saveProgress && saveProgress.status === 'running' && saveProgress.totalChunks > 1
+              ? `${saveProgress.currentChunk}/${saveProgress.totalChunks}…`
+              : saving
+                ? 'Envoi…'
+                : 'Enregistrer'}
           </button>
+          </div>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon, ServerStackIcon, ArrowTopRightOnSquareIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
+import { SyncSettingsPanel } from '../components/Settings/SyncSettingsPanel';
 import { useTheme } from '../context/ThemeContext';
 import type { Theme } from '../context/ThemeContext';
 
@@ -88,6 +89,8 @@ export const SettingsPage: React.FC = () => {
       )}
 
       <div className="space-y-6">
+        <SyncSettingsPanel />
+
         <ControlCard
           title="Configuration du serveur backend"
           description="Paramètres de connexion au serveur Essensys"
