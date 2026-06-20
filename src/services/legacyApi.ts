@@ -47,6 +47,34 @@ interface InjectionAction {
     v: string;
 }
 
+/** Envoie plusieurs indices dans une seule action (planning chauffage, etc.). */
+export const sendInjectionBatch = async (items: Array<{ k: number; v: string }>): Promise<void> => {
+    if (items.length === 0) return;
+
+    const backendUrl = getBackendUrl();
+    const apiUrl = backendUrl === ''
+        ? `/api/admin/inject`
+        : `${backendUrl}/api/admin/inject`;
+
+    console.log(`[BATCH INJECTION] ${items.length} param(s) via ${apiUrl}`);
+
+    const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(items.map(({ k, v }) => ({ k, v: String(v) }))),
+    });
+
+    handleAuthError(response);
+
+    if (!response.ok) {
+        const errorText = await response.text().catch(() => '');
+        console.error(`[BATCH INJECTION] Échec: ${response.status}`, errorText);
+        throw new Error(errorText || `Batch injection failed (${response.status})`);
+    }
+};
+
 export const sendInjection = async (k: number, v: string): Promise<void> => {
     const backendUrl = getBackendUrl();
     const currentProtocol = window.location.protocol;
