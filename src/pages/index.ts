@@ -9,3 +9,4 @@ export { NotificationsPage } from './NotificationsPage';
 export { SettingsPage } from './SettingsPage';
 export { ScenariosPage } from './ScenariosPage';
 export { UniFiProtectPage } from './UniFiProtectPage';
+export { RegressionTestPage } from './RegressionTestPage';

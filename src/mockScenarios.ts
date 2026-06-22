@@ -153,6 +153,15 @@ export function handleMockScenarioRequest(
   const action = slotMatch[2] ?? '';
 
   if (action === 'launch' && method === 'POST') {
+    const isDryRun = url.includes('test_mode=dry_run');
+    if (isDryRun) {
+      return json({
+        status: 'test_ok',
+        dry_run: true,
+        message: 'Validation OK — non envoyé à l\'armoire (mock)',
+        validated_params: [{ k: 590, v: String(slot) }],
+      });
+    }
     return json({ guid: `mock-scenario-launch-${slot}`, slot });
   }
   if (action === 'restore' && method === 'POST') {

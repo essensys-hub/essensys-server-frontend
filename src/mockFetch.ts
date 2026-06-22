@@ -28,6 +28,24 @@ export function setupMocks() {
         }
 
         if (url.includes('/api/admin/inject') && method === 'POST') {
+            const isDryRun = url.includes('test_mode=dry_run');
+            const body = init?.body ? JSON.parse(String(init.body)) : {};
+            if (isDryRun && body.k === 99999) {
+                return jsonResponse({
+                    status: 'test_failed',
+                    dry_run: true,
+                    message: 'Index hors plage',
+                }, 422);
+            }
+            if (isDryRun) {
+                return jsonResponse({
+                    status: 'test_ok',
+                    dry_run: true,
+                    message: 'Validation OK — non envoyé à l\'armoire (mock)',
+                    validated_params: [{ k: body.k, v: String(body.v) }],
+                    exchange_snapshot: [{ k: body.k, v: String(body.v) }],
+                });
+            }
             return jsonResponse({ success: true, message: 'Mock injected' });
         }
 

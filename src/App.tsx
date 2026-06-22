@@ -12,6 +12,7 @@ import {
   NotificationsPage,
   SettingsPage,
   ScenariosPage,
+  RegressionTestPage,
 } from './pages';
 import { DashboardProvider } from './context/DashboardContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -43,6 +44,7 @@ function App() {
               <Route path="/sprinkler" element={<SprinklerPage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/admin/regression" element={<RegressionTestPage />} />
               {/* Fallback route */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Route>

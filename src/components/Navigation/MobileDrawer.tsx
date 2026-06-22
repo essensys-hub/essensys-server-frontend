@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { navItems } from './SidebarMenu';
+import { navItems, adminNavItems } from './SidebarMenu';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -85,6 +85,29 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
               {item.label}
             </NavLink>
           ))}
+
+          <div className="pt-4 mt-4 border-t border-gray-200">
+            <p className="px-3 mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">
+              Administration
+            </p>
+            {adminNavItems.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                onClick={onClose}
+                className={({ isActive }) =>
+                  `flex items-center px-3 py-3 text-base font-medium rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-essensys-primary text-white'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`
+                }
+              >
+                <item.icon className="w-6 h-6 mr-3 flex-shrink-0" />
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
         </nav>
 
         {/* Footer */}
