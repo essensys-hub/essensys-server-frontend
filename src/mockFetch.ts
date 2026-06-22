@@ -1,3 +1,5 @@
+import { handleMockScenarioRequest } from './mockScenarios';
+
 const originalFetch = window.fetch;
 
 export function setupMocks() {
@@ -19,6 +21,11 @@ export function setupMocks() {
         };
 
         console.log(`[MOCK] Intercepted ${method} ${url}`);
+
+        const scenarioMock = handleMockScenarioRequest(url, method);
+        if (scenarioMock) {
+            return scenarioMock;
+        }
 
         if (url.includes('/api/admin/inject') && method === 'POST') {
             return jsonResponse({ success: true, message: 'Mock injected' });
@@ -85,6 +92,12 @@ export function setupMocks() {
                 status: 200,
                 headers: { 'Content-Type': 'image/png' }
             });
+        }
+
+        // Évite le parse JSON sur index.html quand un endpoint n'est pas mocké
+        if (url.includes('/api/')) {
+            console.warn(`[MOCK] Fallback générique pour ${method} ${url}`);
+            return jsonResponse({ success: true, message: 'Mock fallback' });
         }
 
         // Fallback to original fetch
