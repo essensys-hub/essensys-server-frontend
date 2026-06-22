@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { LightBulbIcon } from '@heroicons/react/24/outline';
+import { LightBulbIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 import { sendInjection } from '../services/legacyApi';
+import { useTestMode } from '../context/TestModeContext';
 
 interface Light {
   id: string;
@@ -54,17 +55,26 @@ const indirectLights: Light[] = [
 export const LightingPage: React.FC = () => {
   const [loading, setLoading] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { enabled: testMode } = useTestMode();
 
   const handleLightAction = async (light: Light, action: 'on' | 'off') => {
     const loadingKey = `${light.id}-${action}`;
     setLoading(loadingKey);
     setSuccess(null);
+    setError(null);
 
     try {
       const index = action === 'on' ? light.onIndex : light.offIndex;
-      await sendInjection(index, light.dvalue);
-      setSuccess(`${light.name} : ${action === 'on' ? 'Allumé' : 'Éteint'}`);
+      const mode = await sendInjection(index, light.dvalue);
+      if (mode === 'dry_run') {
+        setSuccess(`${light.name} : test OK (mode test — non envoyé à l'armoire)`);
+      } else {
+        setSuccess(`${light.name} : ${action === 'on' ? 'Allumé' : 'Éteint'}`);
+      }
     } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Erreur commande';
+      setError(msg);
       console.error(e);
     } finally {
       setLoading(null);
@@ -74,14 +84,24 @@ export const LightingPage: React.FC = () => {
   const handleGroupAction = async (lights: Light[], action: 'on' | 'off', groupName: string) => {
     setLoading(`group-${groupName}-${action}`);
     setSuccess(null);
+    setError(null);
 
     try {
+      let anyDryRun = false;
       for (const light of lights) {
         const index = action === 'on' ? light.onIndex : light.offIndex;
-        await sendInjection(index, light.dvalue);
+        const mode = await sendInjection(index, light.dvalue);
+        if (mode === 'dry_run') {
+          anyDryRun = true;
+        }
       }
-      setSuccess(`${groupName} : Tous ${action === 'on' ? 'allumés' : 'éteints'}`);
+      if (anyDryRun) {
+        setSuccess(`${groupName} : test OK (mode test — non envoyé)`);
+      } else {
+        setSuccess(`${groupName} : Tous ${action === 'on' ? 'allumés' : 'éteints'}`);
+      }
     } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur commande');
       console.error(e);
     } finally {
       setLoading(null);
@@ -154,10 +174,23 @@ export const LightingPage: React.FC = () => {
 
       {/* Success Message */}
       {success && (
-        <div className="mb-6 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <p className="text-sm text-green-700">
-            <strong>Commande envoyée :</strong> {success}
+        <div className={`mb-6 p-3 border rounded-lg ${success.includes('mode test') ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
+          <p className={`text-sm ${success.includes('mode test') ? 'text-amber-800' : 'text-green-700'}`}>
+            <strong>{success.includes('mode test') ? 'Mode test :' : 'Commande envoyée :'}</strong> {success}
           </p>
+        </div>
+      )}
+
+      {error && (
+        <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg flex gap-2">
+          <ExclamationTriangleIcon className="w-5 h-5 text-red-600 flex-shrink-0" />
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      {testMode && (
+        <div className="mb-6 p-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-900">
+          Mode test actif — les boutons ci-dessous ne commandent pas l&apos;armoire. Désactivez dans Paramètres pour un contrôle réel.
         </div>
       )}
 

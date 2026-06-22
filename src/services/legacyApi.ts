@@ -52,6 +52,7 @@ import type { InjectionProgressEvent } from '../heating/injectionProgress';
 import type { HeatingSyncStatus, ScheduleSyncEvent } from '../heating/scheduleSync';
 import { pollHeatingSync } from '../heating/scheduleSync';
 import { formatTestVerdict, isTestModeEnabled, testModeHeaders, withTestModeQuery, type DryRunResponse } from '../testMode';
+import { parseInjectionResult } from '../injectionResult';
 
 export interface InjectionBatchResult {
   totalParams: number;
@@ -127,7 +128,7 @@ export const sendInjectionBatch = async (
   return { totalParams: items.length, chunkCount: chunks.length };
 };
 
-export const sendInjection = async (k: number, v: string): Promise<void> => {
+export const sendInjection = async (k: number, v: string): Promise<'live' | 'dry_run'> => {
     const backendUrl = getBackendUrl();
     const currentProtocol = window.location.protocol;
     const currentHost = window.location.hostname;
@@ -165,18 +166,24 @@ export const sendInjection = async (k: number, v: string): Promise<void> => {
             console.error(`[INJECTION] Échec de l'injection k=${k}, v=${v}: ${response.status} ${response.statusText}`);
             const errorText = await response.text().catch(() => '');
             console.error(`[INJECTION] Détails de l'erreur:`, errorText);
-        } else {
-            const responseData = await response.json().catch(() => null) as DryRunResponse | null;
-            if (isTestModeEnabled() && responseData?.dry_run) {
-                console.log(`[INJECTION] ${formatTestVerdict(responseData)}`);
-            } else {
-                console.log(`[INJECTION] Injection réussie k=${k}, v=${v}`);
-            }
-            if (responseData) {
-                console.log(`[INJECTION] Réponse du backend:`, responseData);
-            }
+            throw new Error(errorText || `Injection failed (${response.status})`);
         }
+
+        const responseData = await response.json().catch(() => null);
+        const result = parseInjectionResult(responseData);
+        if (result.kind === 'dry_run') {
+            if (!isTestModeEnabled()) {
+                throw new Error(
+                    'Commande bloquée en dry-run alors que le mode test est désactivé — rechargez la page ou vérifiez Paramètres.',
+                );
+            }
+            console.log(`[INJECTION] ${formatTestVerdict(responseData as DryRunResponse)}`);
+            console.log('----------------------------------------');
+            return 'dry_run';
+        }
+        console.log(`[INJECTION] Injection réussie k=${k}, v=${v}`, responseData);
         console.log('----------------------------------------');
+        return 'live';
     } catch (error) {
         console.error('----------------------------------------');
         console.error(`[INJECTION] Erreur réseau lors de l'injection k=${k}, v=${v}:`, error);

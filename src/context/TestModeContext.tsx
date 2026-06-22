@@ -13,9 +13,14 @@ export const TestModeProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [enabled, setEnabledState] = useState(() => isTestModeEnabled());
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('test') === '1') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('test') === '1') {
       setTestModeEnabled(true);
       setEnabledState(true);
+      params.delete('test');
+      const qs = params.toString();
+      const next = `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`;
+      window.history.replaceState({}, '', next);
     }
   }, []);
 

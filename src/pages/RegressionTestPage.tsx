@@ -7,6 +7,7 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
+import { useTestMode } from '../context/TestModeContext';
 import { runRegressionSuite, REGRESSION_TEST_COUNT } from '../regression/runRegressionSuite';
 import { serverRegressionClient } from '../regression/serverRegressionApi';
 import type { RegressionSuiteSummary, RegressionTestResult } from '../regression/types';
@@ -25,6 +26,7 @@ const statusIcon = (status: RegressionTestResult['status']) => {
 };
 
 export const RegressionTestPage: React.FC = () => {
+  const { enabled: globalTestMode, setEnabled: setGlobalTestMode } = useTestMode();
   const [running, setRunning] = useState(false);
   const [results, setResults] = useState<RegressionTestResult[]>([]);
   const [summary, setSummary] = useState<RegressionSuiteSummary | null>(null);
@@ -65,6 +67,19 @@ export const RegressionTestPage: React.FC = () => {
       />
 
       <div className="space-y-6">
+        {globalTestMode && (
+          <div className="p-4 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-900 space-y-2">
+            <p>
+              <strong>Mode test global actif</strong> — Éclairage et autres pages n&apos;envoient pas de commandes réelles.
+            </p>
+            <ActionButton
+              label="Désactiver le mode test global"
+              variant="secondary"
+              onClick={() => setGlobalTestMode(false)}
+            />
+          </div>
+        )}
+
         <ControlCard
           title="Suite smoke (mode test)"
           description={`${REGRESSION_TEST_COUNT} vérifications alignées sur la spec Playwright OpenSpec 2026-06.026`}

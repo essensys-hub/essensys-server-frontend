@@ -7,9 +7,7 @@ export function isTestModeEnabled(): boolean {
   if (typeof window === 'undefined') {
     return false;
   }
-  if (new URLSearchParams(window.location.search).get('test') === '1') {
-    return true;
-  }
+  // Uniquement sessionStorage — ?test=1 est consommé une fois par TestModeProvider
   return sessionStorage.getItem(STORAGE_KEY) === '1';
 }
 
