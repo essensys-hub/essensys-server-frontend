@@ -18,9 +18,11 @@ import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
   const demoMode = import.meta.env.VITE_DEMO_MODE === 'true';
-  const routerBasename = demoMode
-    ? import.meta.env.BASE_URL.replace(/\/dashboard\/?$/, '')
-    : undefined;
+  const demoRoot = import.meta.env.VITE_DEMO_ROOT === 'true';
+  const routerBasename =
+    demoMode && !demoRoot
+      ? import.meta.env.BASE_URL.replace(/\/dashboard\/?$/, '')
+      : undefined;
 
   return (
     <DashboardProvider>
