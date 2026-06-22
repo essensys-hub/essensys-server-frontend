@@ -54,9 +54,6 @@ function App() {
     </DashboardProvider>
   );
 
-  if (demoMode) {
-    return app;
-  }
   return <TestModeProvider>{app}</TestModeProvider>;
 }
 
