@@ -17,7 +17,7 @@ export default defineConfig({
   projects: [
     {
       name: 'demo',
-      testMatch: /demo\.spec\.ts$/,
+      testMatch: /(demo|lighting-chevet-pc3\.demo)\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
         baseURL: demoURL,
@@ -25,7 +25,7 @@ export default defineConfig({
     },
     {
       name: 'local',
-      testMatch: /local\.spec\.ts$/,
+      testMatch: /(local|lighting-chevet-pc3\.local)\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
         baseURL: localURL,
@@ -37,7 +37,7 @@ export default defineConfig({
     },
     {
       name: 'remote',
-      testMatch: /remote\.spec\.ts$/,
+      testMatch: /(remote|lighting-chevet-pc3\.remote)\.spec\.ts$/,
       use: {
         ...devices['Desktop Chrome'],
         baseURL: portalURL,

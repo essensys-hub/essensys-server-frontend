@@ -45,14 +45,6 @@ export const serverRegressionClient: RegressionClient = {
     return data.slots ?? [];
   },
 
-  async launchScenarioDryRun(slot) {
-    const res = await fetch(withDryRunQuery(scenariosUrl(`/${slot}/launch`)), {
-      method: 'POST',
-      headers: dryRunHeaders(),
-    });
-    return parseDryRun(res);
-  },
-
   async readExchange(keys) {
     const res = await fetch(withDryRunQuery(adminUrl(`/exchange?keys=${keys.join(',')}`)), {
       headers: dryRunHeaders(),

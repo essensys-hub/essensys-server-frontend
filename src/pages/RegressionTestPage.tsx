@@ -71,8 +71,8 @@ export const RegressionTestPage: React.FC = () => {
         >
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Les tests utilisent automatiquement le mode dry-run (<code className="text-xs bg-gray-100 px-1 rounded">test_mode=dry_run</code>).
-              Équivalent local de <code className="text-xs bg-gray-100 px-1 rounded">npm run test:demo</code> côté API.
+              Validation uniquement — test cible le chevet Petite Chambre 3 (k=613, v=64).
+              Aucun scénario « Je sors » ni trigger k=590. Échec immédiat si la réponse contient un <code className="text-xs bg-gray-100 px-1 rounded">guid</code> (mode live).
             </p>
             <div className="flex flex-wrap gap-3 items-center">
               <ActionButton

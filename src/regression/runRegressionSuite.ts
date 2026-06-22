@@ -3,6 +3,8 @@ import type {
   RegressionSuiteSummary,
   RegressionTestResult,
 } from './types';
+import { assertDryRunOnly } from './assertDryRun';
+import { CHEVET_PETITE_CHAMBRE_3 } from './lightingFixtures';
 
 interface TestDef {
   id: string;
@@ -13,51 +15,43 @@ interface TestDef {
 
 const TESTS: TestDef[] = [
   {
-    id: 'inject-dry-run',
-    name: 'Inject dry-run (k=590)',
-    description: 'Valide une écriture trigger sans enqueue firmware',
+    id: 'lighting-chevet-pc3-on',
+    name: 'Chevet PC3 — allumer (dry-run)',
+    description: `k=${CHEVET_PETITE_CHAMBRE_3.onIndex} v=${CHEVET_PETITE_CHAMBRE_3.dvalue} — aucune action armoire`,
     async run(client) {
-      const data = await client.injectDryRun(590, '2');
-      if (data.status !== 'test_ok' || !data.dry_run) {
-        throw new Error(data.message ?? `statut inattendu : ${data.status}`);
+      const data = await client.injectDryRun(
+        CHEVET_PETITE_CHAMBRE_3.onIndex,
+        CHEVET_PETITE_CHAMBRE_3.dvalue,
+      );
+      assertDryRunOnly(data);
+      const validated = data.validated_params?.find((p) => p.k === CHEVET_PETITE_CHAMBRE_3.onIndex);
+      if (!validated) {
+        throw new Error('validated_params ne contient pas k=613');
       }
-      return data.message ?? 'test_ok';
+      return `${CHEVET_PETITE_CHAMBRE_3.name} validé — ${data.message ?? 'test_ok'}`;
     },
   },
   {
     id: 'scenarios-list',
-    name: 'Liste des scénarios',
-    description: 'Vérifie le slot « Je sors » (slot 2)',
+    name: 'Liste des scénarios (lecture)',
+    description: 'GET scénarios — aucune écriture',
     async run(client) {
       const slots = await client.listScenarios();
       if (slots.length < 8) {
         throw new Error(`Attendu ≥8 slots, reçu ${slots.length}`);
       }
-      const slot2 = slots.find((s) => s.slot_number === 2);
-      if (!slot2?.label.includes('Je sors')) {
-        throw new Error(`Slot 2 introuvable ou libellé incorrect : ${slot2?.label ?? '—'}`);
-      }
-      return `${slots.length} slots, « ${slot2.label} » OK`;
-    },
-  },
-  {
-    id: 'scenario-launch-dry-run',
-    name: 'Lancement scénario dry-run',
-    description: 'POST launch slot 2 en mode test',
-    async run(client) {
-      const data = await client.launchScenarioDryRun(2);
-      if (data.status !== 'test_ok' || !data.dry_run) {
-        throw new Error(data.message ?? `statut inattendu : ${data.status}`);
-      }
-      return data.message ?? 'test_ok';
+      return `${slots.length} slots chargés`;
     },
   },
   {
     id: 'exchange-read',
-    name: 'Lecture exchange chauffage',
-    description: 'GET exchange clés 349–352 (lecture seule)',
+    name: 'Lecture exchange éclairage',
+    description: `GET exchange k=${CHEVET_PETITE_CHAMBRE_3.onIndex} (lecture seule)`,
     async run(client) {
-      const values = await client.readExchange([349, 350, 351, 352]);
+      const values = await client.readExchange([
+        CHEVET_PETITE_CHAMBRE_3.onIndex,
+        CHEVET_PETITE_CHAMBRE_3.offIndex,
+      ]);
       if (!Array.isArray(values)) {
         throw new Error('Réponse exchange invalide');
       }
@@ -67,11 +61,14 @@ const TESTS: TestDef[] = [
   {
     id: 'inject-invalid',
     name: 'Rejet paramètre invalide',
-    description: 'Index hors plage doit retourner test_failed',
+    description: "Index hors plage → test_failed, pas d'enqueue",
     async run(client) {
       const data = await client.injectDryRun(99999, '1');
-      if (data.status === 'test_ok') {
+      if (data.status === 'test_ok' && data.dry_run) {
         throw new Error('Index invalide accepté à tort');
+      }
+      if ((data as { guid?: string }).guid) {
+        throw new Error('Index invalide a produit un guid live');
       }
       return data.message ?? 'test_failed attendu';
     },

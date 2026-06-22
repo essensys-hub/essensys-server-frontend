@@ -14,7 +14,6 @@ export interface RegressionTestResult {
 export interface RegressionClient {
   injectDryRun(k: number, v: string): Promise<DryRunResponse>;
   listScenarios(): Promise<Array<{ slot_number: number; label: string }>>;
-  launchScenarioDryRun(slot: number): Promise<DryRunResponse>;
   readExchange(keys: number[]): Promise<Array<{ k: number; v: string }>>;
 }
 

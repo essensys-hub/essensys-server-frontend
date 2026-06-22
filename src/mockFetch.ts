@@ -30,6 +30,14 @@ export function setupMocks() {
         if (url.includes('/api/admin/inject') && method === 'POST') {
             const isDryRun = url.includes('test_mode=dry_run');
             const body = init?.body ? JSON.parse(String(init.body)) : {};
+            if (isDryRun && body.k === 613 && String(body.v) === '64') {
+                return jsonResponse({
+                    status: 'test_ok',
+                    dry_run: true,
+                    message: 'Validation OK — chevet PC3 non envoyé (mock)',
+                    validated_params: [{ k: 613, v: '64' }],
+                });
+            }
             if (isDryRun && body.k === 99999) {
                 return jsonResponse({
                     status: 'test_failed',
