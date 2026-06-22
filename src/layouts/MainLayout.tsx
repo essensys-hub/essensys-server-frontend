@@ -6,6 +6,7 @@ import {
   MobileDrawer, 
   MobileHeader 
 } from '../components/Navigation';
+import { TestModeBanner } from '../components/UI/TestModeBanner';
 
 interface MainLayoutProps {
   children?: React.ReactNode;
@@ -33,6 +34,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Padding for mobile header and bottom tabs */}
         <div className="pt-14 pb-20 lg:pt-0 lg:pb-0 min-h-screen">
           <div className="max-w-5xl mx-auto px-4 py-6 lg:px-8 lg:py-8">
+            <TestModeBanner />
             {children || <Outlet />}
           </div>
         </div>

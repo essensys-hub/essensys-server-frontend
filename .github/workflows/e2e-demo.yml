@@ -1,0 +1,31 @@
+name: e2e-demo
+
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'e2e/**'
+      - 'package.json'
+  workflow_dispatch:
+
+jobs:
+  playwright-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Playwright
+        working-directory: e2e
+        run: |
+          npm install
+          npx playwright install chromium --with-deps
+      - name: Run demo E2E
+        working-directory: e2e
+        run: npm run test:demo
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/

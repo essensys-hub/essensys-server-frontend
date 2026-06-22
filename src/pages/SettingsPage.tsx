@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon, ServerStackIcon, ArrowTopRightOnSquareIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 import { SyncSettingsPanel } from '../components/Settings/SyncSettingsPanel';
+import { useTestMode } from '../context/TestModeContext';
 import { useTheme } from '../context/ThemeContext';
 import type { Theme } from '../context/ThemeContext';
 
@@ -47,6 +48,7 @@ export const SettingsPage: React.FC = () => {
   };
 
   const { theme, setTheme } = useTheme();
+  const { enabled: testMode, setEnabled: setTestMode } = useTestMode();
 
   const ThemeOption = ({ value, label, color }: { value: Theme; label: string; color: string }) => (
     <button
@@ -90,6 +92,20 @@ export const SettingsPage: React.FC = () => {
 
       <div className="space-y-6">
         <SyncSettingsPanel />
+
+        <ControlCard title="Mode test" description="Valider les commandes sans envoi à l'armoire (dry-run)">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={testMode}
+              onChange={(e) => setTestMode(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-essensys-primary focus:ring-essensys-primary"
+            />
+            <span className="text-sm text-gray-700">
+              Activer le mode test — aucune action firmware enqueue
+            </span>
+          </label>
+        </ControlCard>
 
         <ControlCard
           title="Configuration du serveur backend"

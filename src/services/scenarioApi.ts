@@ -1,5 +1,6 @@
 import { getBackendUrl } from '../components/Dashboard/BackendConfig';
 import { AuthenticationError } from './legacyApi';
+import { testModeHeaders, withTestModeQuery } from '../testMode';
 
 export interface ScenarioSlotSummary {
   slot_number: number;
@@ -63,9 +64,15 @@ export const fetchScenario = async (slot: number): Promise<ScenarioSlotDetail> =
 
 export const launchScenario = async (slot: number): Promise<string> => {
   const res = await handleResponse(
-    await fetch(`${apiBase()}/${slot}/launch`, { method: 'POST' }),
+    await fetch(withTestModeQuery(`${apiBase()}/${slot}/launch`), {
+      method: 'POST',
+      headers: testModeHeaders(),
+    }),
   );
   const data = await res.json();
+  if (data.dry_run && data.status === 'test_ok') {
+    return `test-ok-${slot}`;
+  }
   return data.guid as string;
 };
 

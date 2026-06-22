@@ -51,6 +51,7 @@ import { chunkInjectionParams } from '../heating/injectLimits';
 import type { InjectionProgressEvent } from '../heating/injectionProgress';
 import type { HeatingSyncStatus, ScheduleSyncEvent } from '../heating/scheduleSync';
 import { pollHeatingSync } from '../heating/scheduleSync';
+import { formatTestVerdict, isTestModeEnabled, testModeHeaders, withTestModeQuery, type DryRunResponse } from '../testMode';
 
 export interface InjectionBatchResult {
   totalParams: number;
@@ -69,9 +70,9 @@ export const sendInjectionBatch = async (
   }
 
   const backendUrl = getBackendUrl();
-  const apiUrl = backendUrl === ''
-    ? `/api/admin/inject`
-    : `${backendUrl}/api/admin/inject`;
+  const apiUrl = withTestModeQuery(
+    backendUrl === '' ? `/api/admin/inject` : `${backendUrl}/api/admin/inject`,
+  );
 
   const chunks = chunkInjectionParams(items);
   console.log(`[BATCH INJECTION] ${items.length} param(s) → ${chunks.length} envoi(s) via ${apiUrl}`);
@@ -95,9 +96,7 @@ export const sendInjectionBatch = async (
 
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: testModeHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(chunk.map(({ k, v }) => ({ k, v: String(v) }))),
     });
 
@@ -136,9 +135,11 @@ export const sendInjection = async (k: number, v: string): Promise<void> => {
     // Déterminer l'URL de l'API
     // Si backendUrl est vide (local), utiliser URL relative
     // Sinon, utiliser l'URL complète avec le bon protocole
-    const apiUrl = backendUrl === ''
-        ? `/api/admin/inject`  // URL relative - nginx proxy vers backend (local)
-        : `${backendUrl}/api/admin/inject`;  // URL absolue (WAN: HTTPS, local configuré: HTTP)
+    const apiUrl = withTestModeQuery(
+        backendUrl === ''
+        ? `/api/admin/inject`
+        : `${backendUrl}/api/admin/inject`,
+    );
 
     console.log('----------------------------------------');
     console.log(`[INJECTION] Hostname actuel: ${currentHost}:${window.location.port}`);
@@ -150,9 +151,7 @@ export const sendInjection = async (k: number, v: string): Promise<void> => {
     try {
         const response = await fetch(apiUrl, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: testModeHeaders({ 'Content-Type': 'application/json' }),
             body: JSON.stringify({ k, v: String(v) }),
         });
 
@@ -167,8 +166,12 @@ export const sendInjection = async (k: number, v: string): Promise<void> => {
             const errorText = await response.text().catch(() => '');
             console.error(`[INJECTION] Détails de l'erreur:`, errorText);
         } else {
-            const responseData = await response.json().catch(() => null);
-            console.log(`[INJECTION] Injection réussie k=${k}, v=${v}`);
+            const responseData = await response.json().catch(() => null) as DryRunResponse | null;
+            if (isTestModeEnabled() && responseData?.dry_run) {
+                console.log(`[INJECTION] ${formatTestVerdict(responseData)}`);
+            } else {
+                console.log(`[INJECTION] Injection réussie k=${k}, v=${v}`);
+            }
             if (responseData) {
                 console.log(`[INJECTION] Réponse du backend:`, responseData);
             }

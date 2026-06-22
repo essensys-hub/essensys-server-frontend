@@ -38,9 +38,13 @@ export const useScenarios = (options?: { disabled?: boolean }) => {
     setMessage(null);
     setError(null);
     try {
-      await launchScenario(slot);
+      const guid = await launchScenario(slot);
       const label = slots.find((s) => s.slot_number === slot)?.label ?? `Scénario ${slot}`;
-      setMessage(`${label} lancé`);
+      if (guid.startsWith('test-ok')) {
+        setMessage(`${label} — test OK (non envoyé à l'armoire)`);
+      } else {
+        setMessage(`${label} lancé`);
+      }
       await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Échec lancement');

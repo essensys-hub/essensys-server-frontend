@@ -1,0 +1,13 @@
+{
+  "name": "essensys-ui-e2e",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:demo": "playwright test --project=demo",
+    "test:local": "playwright test --project=local",
+    "test:remote": "playwright test --project=remote"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0"
+  }
+}

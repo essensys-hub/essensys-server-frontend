@@ -15,6 +15,7 @@ import {
 } from './pages';
 import { DashboardProvider } from './context/DashboardContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { TestModeProvider } from './context/TestModeContext';
 
 function App() {
   const demoMode = import.meta.env.VITE_DEMO_MODE === 'true';
@@ -24,7 +25,7 @@ function App() {
       ? import.meta.env.BASE_URL.replace(/\/dashboard\/?$/, '')
       : undefined;
 
-  return (
+  const app = (
     <DashboardProvider>
       <ThemeProvider>
         <BrowserRouter basename={routerBasename}>
@@ -50,6 +51,11 @@ function App() {
       </ThemeProvider>
     </DashboardProvider>
   );
+
+  if (demoMode) {
+    return app;
+  }
+  return <TestModeProvider>{app}</TestModeProvider>;
 }
 
 export default App;
