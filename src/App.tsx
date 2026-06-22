@@ -17,10 +17,15 @@ import { DashboardProvider } from './context/DashboardContext';
 import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
+  const demoMode = import.meta.env.VITE_DEMO_MODE === 'true';
+  const routerBasename = demoMode
+    ? import.meta.env.BASE_URL.replace(/\/dashboard\/?$/, '')
+    : undefined;
+
   return (
     <DashboardProvider>
       <ThemeProvider>
-        <BrowserRouter>
+        <BrowserRouter basename={routerBasename}>
           <Routes>
             <Route element={<MainLayout />}>
               <Route index element={<Navigate to="/dashboard" replace />} />
