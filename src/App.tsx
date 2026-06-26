@@ -13,7 +13,11 @@ import {
   SettingsPage,
   ScenariosPage,
   RegressionTestPage,
+  LoginPage,
+  AccountSettingsPage,
+  LanUsersAdminPage,
 } from './pages';
+import { LanAuthGate } from './components/LanAuthGate';
 import { DashboardProvider } from './context/DashboardContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { TestModeProvider } from './context/TestModeContext';
@@ -31,22 +35,26 @@ function App() {
       <ThemeProvider>
         <BrowserRouter basename={routerBasename}>
           <Routes>
-            <Route element={<MainLayout />}>
-              <Route index element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/unifi-protect" element={<UniFiProtectPage />} />
-              <Route path="/security" element={<SecurityPage />} />
-              <Route path="/heating" element={<HeatingPage />} />
-              <Route path="/lighting" element={<LightingPage />} />
-              <Route path="/scenarios" element={<ScenariosPage />} />
-              <Route path="/shutters" element={<ShuttersPage />} />
-              <Route path="/water-heater" element={<WaterHeaterPage />} />
-              <Route path="/sprinkler" element={<SprinklerPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/admin/regression" element={<RegressionTestPage />} />
-              {/* Fallback route */}
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route element={<LanAuthGate />}>
+              <Route element={<MainLayout />}>
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/unifi-protect" element={<UniFiProtectPage />} />
+                <Route path="/security" element={<SecurityPage />} />
+                <Route path="/heating" element={<HeatingPage />} />
+                <Route path="/lighting" element={<LightingPage />} />
+                <Route path="/scenarios" element={<ScenariosPage />} />
+                <Route path="/shutters" element={<ShuttersPage />} />
+                <Route path="/water-heater" element={<WaterHeaterPage />} />
+                <Route path="/sprinkler" element={<SprinklerPage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/settings/account" element={<AccountSettingsPage />} />
+                <Route path="/settings/users" element={<LanUsersAdminPage />} />
+                <Route path="/admin/regression" element={<RegressionTestPage />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>

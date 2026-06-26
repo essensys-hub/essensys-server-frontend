@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon, ServerStackIcon, ArrowTopRightOnSquareIcon, ChartBarIcon, BeakerIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon, ServerStackIcon, ArrowTopRightOnSquareIcon, ChartBarIcon, BeakerIcon, UserCircleIcon, UsersIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 import { SyncSettingsPanel } from '../components/Settings/SyncSettingsPanel';
 import { useTestMode } from '../context/TestModeContext';
 import { useTheme } from '../context/ThemeContext';
 import type { Theme } from '../context/ThemeContext';
+import { isLanIamEnabled, useLanAuth } from '../hooks/useLanAuth';
 
 const STORAGE_KEY = 'essensys_backend_config';
 
@@ -50,6 +51,8 @@ export const SettingsPage: React.FC = () => {
 
   const { theme, setTheme } = useTheme();
   const { enabled: testMode, setEnabled: setTestMode } = useTestMode();
+  const lanIam = isLanIamEnabled();
+  const { user: lanUser, logout: lanLogout } = useLanAuth();
 
   const ThemeOption = ({ value, label, color }: { value: Theme; label: string; color: string }) => (
     <button
@@ -194,6 +197,45 @@ export const SettingsPage: React.FC = () => {
           description="Sécurité d'accès au système"
         >
           <div className="space-y-4">
+            {lanIam ? (
+              <>
+                <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <ShieldCheckIcon className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-green-800">Session LAN IAM</p>
+                    <p className="text-xs text-green-700 mt-1">
+                      Connecté en tant que {lanUser?.email ?? '…'} ({lanUser?.role ?? '—'}). Session valide 7 jours.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    to="/settings/account"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-essensys-primary text-white text-sm font-medium rounded-lg hover:bg-essensys-primary-dark"
+                  >
+                    <UserCircleIcon className="w-4 h-4" />
+                    Mon compte
+                  </Link>
+                  {lanUser?.role === 'lan_admin' && (
+                    <Link
+                      to="/settings/users"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50"
+                    >
+                      <UsersIcon className="w-4 h-4" />
+                      Utilisateurs LAN
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => void lanLogout().then(() => { window.location.href = '/login'; })}
+                    className="inline-flex items-center px-4 py-2.5 text-sm font-medium text-red-700 border border-red-200 rounded-lg hover:bg-red-50"
+                  >
+                    Déconnexion
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
             <div className="flex items-start gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
               <ShieldCheckIcon className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
               <div>
@@ -230,6 +272,8 @@ export const SettingsPage: React.FC = () => {
                 </div>
               </div>
             </div>
+              </>
+            )}
           </div>
         </ControlCard>
 

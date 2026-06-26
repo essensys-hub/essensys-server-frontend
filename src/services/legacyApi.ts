@@ -13,9 +13,11 @@ export class AuthenticationError extends Error {
 const handleAuthError = (response: Response): void => {
     if (response.status === 401) {
         console.error('[AUTH] Erreur 401 - Authentification requise');
-        // Display a simple alert for now (Basic Auth will show browser prompt)
+        if (import.meta.env.VITE_LAN_IAM === 'true') {
+            window.location.href = '/login';
+            throw new AuthenticationError();
+        }
         alert('Session expirée ou authentification requise. Veuillez vous reconnecter.');
-        // Reload page to trigger Basic Auth prompt
         window.location.reload();
         throw new AuthenticationError();
     }
