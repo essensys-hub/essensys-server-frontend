@@ -18,6 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useLanAuth } from '../../hooks/useLanAuth';
 import { useLanIamMode } from '../../context/LanIamContext';
+import { LanIamSidebarFooter } from './LanIamSidebarFooter';
 
 interface NavItem {
   to: string;
@@ -49,14 +50,13 @@ export function useAdminNavItems(): NavItem[] {
 
   return useMemo(() => {
     const items = [...baseAdminNavItems];
-    if (enabled && user?.role === 'lan_admin') {
-      items.unshift(
-        { to: '/settings/users', icon: UsersIcon, label: 'Comptes .local' },
-        { to: '/settings/account', icon: UserCircleIcon, label: 'Mon compte' },
-      );
+    if (!enabled || !user) return items;
+    if (user.role === 'lan_admin') {
+      items.unshift({ to: '/settings/users', icon: UsersIcon, label: 'Comptes .local' });
     }
+    items.unshift({ to: '/settings/account', icon: UserCircleIcon, label: 'Mon compte' });
     return items;
-  }, [enabled, user?.role]);
+  }, [enabled, user]);
 }
 
 export const SidebarMenu: React.FC = () => {
@@ -113,8 +113,8 @@ export const SidebarMenu: React.FC = () => {
         </div>
       </nav>
 
-      <div className="px-6 py-4 border-t border-gray-200">
-        <p className="text-xs text-gray-500">Mon Essensys v1.2.0</p>
+      <div className="px-4 py-4 border-t border-gray-200">
+        <LanIamSidebarFooter />
       </div>
     </aside>
   );
