@@ -265,6 +265,118 @@
   cursor: wait;
 }
 
+.lan-auth-remember {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.25rem;
+  font-size: 0.9rem;
+  color: #ccc;
+  cursor: pointer;
+  user-select: none;
+}
+
+.lan-auth-remember input {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--lan-cyan);
+  cursor: pointer;
+}
+
+.lan-auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0 1rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.lan-auth-divider::before,
+.lan-auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lan-auth-divider span {
+  padding: 0 0.65rem;
+}
+
+.lan-auth-oauth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.lan-auth-oauth-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border-radius: 0.65rem;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.2s, opacity 0.2s;
+}
+
+.lan-auth-oauth-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+.lan-auth-oauth-btn--google {
+  background: #fff;
+  color: #333;
+}
+
+.lan-auth-oauth-btn--google:not(:disabled):hover {
+  background: #f0f0f0;
+}
+
+.lan-auth-oauth-btn--apple {
+  background: #000;
+  color: #fff;
+  border: 1px solid #333;
+}
+
+.lan-auth-oauth-btn--apple:not(:disabled):hover {
+  background: #222;
+}
+
+.lan-auth-oauth-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.lan-auth-oauth-icon {
+  margin-right: 0.65rem;
+  font-weight: 600;
+}
+
+.lan-auth-signup {
+  margin: 1.25rem 0 0;
+  font-size: 0.9rem;
+  color: #aaa;
+  text-align: center;
+}
+
+.lan-auth-signup-link {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 0.25rem;
+  color: var(--lan-cyan);
+  font-weight: 600;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: not-allowed;
+  opacity: 0.5;
+  text-decoration: none;
+}
+
 .lan-auth-error {
   color: #ff8a8a;
   background: rgba(255, 107, 107, 0.12);

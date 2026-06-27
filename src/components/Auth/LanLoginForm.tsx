@@ -1,6 +1,9 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useLanAuth } from '../../hooks/useLanAuth';
 
+/** OAuth LAN — désactivé jusqu'à implémentation backend (OpenSpec futur). */
+const OAUTH_PROVIDERS_ENABLED = false;
+
 export type LanLoginFormProps = {
   subtitle: string;
   footer?: ReactNode;
@@ -12,6 +15,7 @@ export function LanLoginForm({ subtitle, footer, onSuccessNavigate, showLogoInCa
   const { login } = useLanAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -68,10 +72,64 @@ export function LanLoginForm({ subtitle, footer, onSuccessNavigate, showLogoInCa
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+
+        <label className="lan-auth-remember" htmlFor="lan-remember">
+          <input
+            id="lan-remember"
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+          />
+          <span>Se souvenir de moi</span>
+        </label>
+
         <button type="submit" className="lan-auth-btn" disabled={submitting}>
           {submitting ? 'Connexion…' : 'Se connecter'}
         </button>
       </form>
+
+      <div className="lan-auth-divider" aria-hidden>
+        <span>OU</span>
+      </div>
+
+      <div className="lan-auth-oauth">
+        <button
+          type="button"
+          className="lan-auth-oauth-btn lan-auth-oauth-btn--google"
+          disabled={!OAUTH_PROVIDERS_ENABLED}
+          title={OAUTH_PROVIDERS_ENABLED ? undefined : 'Bientôt disponible sur le LAN'}
+          aria-disabled={!OAUTH_PROVIDERS_ENABLED}
+        >
+          <span className="lan-auth-oauth-icon" aria-hidden>
+            G
+          </span>
+          Continuer avec Google
+        </button>
+        <button
+          type="button"
+          className="lan-auth-oauth-btn lan-auth-oauth-btn--apple"
+          disabled={!OAUTH_PROVIDERS_ENABLED}
+          title={OAUTH_PROVIDERS_ENABLED ? undefined : 'Bientôt disponible sur le LAN'}
+          aria-disabled={!OAUTH_PROVIDERS_ENABLED}
+        >
+          <span className="lan-auth-oauth-icon" aria-hidden>
+            
+          </span>
+          Continuer avec Apple
+        </button>
+      </div>
+
+      <p className="lan-auth-signup">
+        Pas encore de compte ?{' '}
+        <button
+          type="button"
+          className="lan-auth-signup-link"
+          disabled
+          title="Les comptes LAN sont créés par un administrateur"
+        >
+          S&apos;inscrire
+        </button>
+      </p>
 
       {footer && <div className="lan-auth-footer">{footer}</div>}
     </div>

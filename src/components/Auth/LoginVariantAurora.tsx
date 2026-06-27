@@ -1,13 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { LanLoginForm } from './LanLoginForm';
-import { VariantSwitch } from './LoginVariantMaison';
 
-type Props = {
-  onSwitchVariant?: (v: 'maison' | 'aurora') => void;
-  activeVariant?: 'maison' | 'aurora';
-};
-
-export function LoginVariantAurora({ onSwitchVariant, activeVariant = 'aurora' }: Props) {
+export function LoginVariantAurora() {
   const navigate = useNavigate();
 
   return (
@@ -18,13 +12,6 @@ export function LoginVariantAurora({ onSwitchVariant, activeVariant = 'aurora' }
           <LanLoginForm
             subtitle="Accès administration de votre gateway Essensys"
             onSuccessNavigate={() => navigate('/dashboard', { replace: true })}
-            footer={
-              onSwitchVariant ? (
-                <VariantSwitch active={activeVariant} onSwitch={onSwitchVariant} />
-              ) : (
-                <span>mon.essensys.local · LAN sécurisé</span>
-              )
-            }
           />
         </div>
         <aside className="lan-login-aurora__hero">
