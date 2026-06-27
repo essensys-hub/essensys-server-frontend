@@ -1,0 +1,24 @@
+---
+description: Processus Playwright UI multi-device ESSENSYS sans action armoire
+alwaysApply: true
+---
+
+# UI multi-device no-armoire
+
+Quand tu ajoutes ou exécutes des tests UI dans `essensys-server-frontend/e2e/` :
+
+1. Utilise uniquement les URLs démo par défaut :
+   - `https://demo.essensys.local`
+   - `https://demo.essensys.fr`
+   - `https://demo.portail.essensys.fr`
+2. N'envoie jamais de valeur à une armoire domotique réelle.
+3. Toute route mutante domotique (`/inject`, `/web/actions`, `/scenarios/*/launch`) doit passer par la fixture `fixtures/no-armoire.ts`.
+4. Les appels mutants doivent être neutralisés par `test_mode=dry_run` ou `X-Essensys-Test-Mode: dry-run`; même neutralisés, les tests UI doivent préférer le mock navigateur.
+5. Pour valider les formats, lance au minimum :
+   ```bash
+   cd essensys-server-frontend/e2e
+   npm run test -- ui-smoke.spec.ts --project=support-desktop --project=support-iphone --project=support-ipad --project=support-ecran-domo
+   npm run test -- no-armoire.spec.ts --project=support-desktop
+   ```
+6. Joins les captures générées dans `e2e/artifacts/screenshots/` au retour de test.
+7. Si une URL locale/portail démo ne résout pas, ne bascule pas vers une armoire client : signale le DNS manquant et demande l'URL démo correcte.

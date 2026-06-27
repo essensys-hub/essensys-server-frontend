@@ -33,15 +33,6 @@ paths = [
     '''^README\.md$''',
     '''^AGENTS\.md$''',
     '''^\.env\.example$''',
-    # Design-system sync cache + bundle (build artifacts, already gitignored
-    # via .gitignore lines for `.design-sync/.cache/` and `ds-bundle/`). The
-    # `sourceKey`/`gradeKey`/`cfgSlice` fields are deterministic content
-    # hashes derived from component sources (16-hex truncated digests and
-    # 64-hex SHA-256, keyRecipe=7) used to address design-system variants —
-    # not live credentials. They trip the generic-api-key rule but carry no
-    # secret value. See SCRUM-12.
-    '''^\.design-sync/''',
-    '''^ds-bundle/''',
 ]
 
 regexes = [

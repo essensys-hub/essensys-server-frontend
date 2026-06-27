@@ -85,7 +85,8 @@ export const CameraCard: React.FC<CameraCardProps> = ({
           <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
             <div className="text-center">
               <VideoCameraIcon className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-xs text-gray-500">Image indisponible</p>
+              <p className="text-xs text-gray-500">Flux caméra indisponible</p>
+              <p className="mt-1 text-[11px] text-gray-400">Désactivé ou non fourni en mode démo</p>
             </div>
           </div>
         ) : (

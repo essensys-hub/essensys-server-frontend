@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/no-armoire';
 
 test.describe('local — dry-run API', () => {
   test.skip(!process.env.ESSENSYS_BASIC_USER, 'ESSENSYS_BASIC_USER requis');

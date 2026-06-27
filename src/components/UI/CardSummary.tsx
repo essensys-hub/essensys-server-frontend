@@ -101,7 +101,7 @@ export const CardSummary: React.FC<CardSummaryProps> = ({
   externalLink,
   description,
 }) => {
-  const cardClass = "block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 overflow-hidden group";
+  const cardClass = "block bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md hover:border-gray-300 transition-all duration-200 overflow-hidden group outline-none focus-visible:ring-2 focus-visible:ring-essensys-primary focus-visible:ring-offset-2 focus-visible:border-essensys-primary";
 
   if (externalLink) {
     return (

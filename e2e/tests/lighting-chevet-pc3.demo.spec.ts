@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/no-armoire';
 
 test.describe('demo — chevet PC3 dry-run (mocks navigateur)', () => {
   test('page régression valide chevet PC3 sans guid', async ({ page }) => {

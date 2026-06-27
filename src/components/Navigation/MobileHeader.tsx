@@ -7,11 +7,11 @@ interface MobileHeaderProps {
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({ onMenuClick }) => {
   return (
-    <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 z-40">
+    <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-gray-200 z-40" aria-label="En-tête mobile">
       <div className="flex items-center justify-between h-full px-4">
         <button
           onClick={onMenuClick}
-          className="p-2 -ml-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+          className="p-2 -ml-2 text-gray-500 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-essensys-primary focus-visible:ring-offset-2"
           aria-label="Ouvrir le menu"
         >
           <Bars3Icon className="w-6 h-6" />

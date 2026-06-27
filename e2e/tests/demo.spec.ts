@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/no-armoire';
 
 test.describe('demo — navigation', () => {
   test('dashboard et scénarios chargent', async ({ page }) => {

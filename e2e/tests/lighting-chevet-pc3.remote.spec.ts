@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../fixtures/no-armoire';
 
 const CHEVET = { k: 613, v: '64' };
 

@@ -3,9 +3,12 @@
   "private": true,
   "scripts": {
     "test": "playwright test",
-    "test:demo": "playwright test --project=demo",
-    "test:local": "playwright test --project=local",
-    "test:remote": "playwright test --project=remote"
+    "test:matrix": "node scripts/test-matrix.mjs",
+    "test:support": "playwright test --project=support-desktop --project=support-iphone --project=support-android --project=support-ipad --project=support-ecran-domo",
+    "test:local": "playwright test --project=local-desktop --project=local-iphone --project=local-android --project=local-ipad --project=local-ecran-domo",
+    "test:remote": "playwright test --project=remote-desktop --project=remote-iphone --project=remote-android --project=remote-ipad --project=remote-ecran-domo",
+    "test:device": "node scripts/test-device.mjs",
+    "test:update-snapshots": "playwright test --update-snapshots"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0"

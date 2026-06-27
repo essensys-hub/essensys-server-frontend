@@ -13,6 +13,8 @@
     --essensys-danger-dark: #b91c1c;
     --essensys-success: #16a34a;
     --essensys-warning: #f59e0b;
+    --essensys-mobile-header-height: 3.5rem;
+    --essensys-bottom-nav-height: 4rem;
 
     --essensys-bg-app: #f8f8f8;
     --essensys-bg-card: #ffffff;
@@ -25,6 +27,23 @@
     /* gray-900 */
     --essensys-text-muted: #6b7280;
     /* gray-500 */
+}
+
+.essensys-main-scroll {
+    padding-top: var(--essensys-mobile-header-height);
+    padding-bottom: calc(var(--essensys-bottom-nav-height) + env(safe-area-inset-bottom, 0px) + 1.5rem);
+}
+
+.essensys-bottom-tabs {
+    min-height: calc(var(--essensys-bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (min-width: 1024px) {
+    .essensys-main-scroll {
+        padding-top: 0;
+        padding-bottom: 0;
+    }
 }
 
 [data-theme="dark"] {
