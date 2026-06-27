@@ -10,6 +10,7 @@ export { SettingsPage } from './SettingsPage';
 export { ScenariosPage } from './ScenariosPage';
 export { UniFiProtectPage } from './UniFiProtectPage';
 export { RegressionTestPage } from './RegressionTestPage';
+export { LoginPreviewPage } from './LoginPreviewPage';
 export { LoginPage } from './LoginPage';
 export { AccountSettingsPage } from './AccountSettingsPage';
 export { LanUsersAdminPage } from './LanUsersAdminPage';

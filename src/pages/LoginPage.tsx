@@ -1,63 +1,45 @@
-import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useLanAuth } from '../hooks/useLanAuth';
+import { useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import '../styles/auth-lan.css';
+import { LoginVariantMaison } from '../components/Auth/LoginVariantMaison';
+import { LoginVariantAurora } from '../components/Auth/LoginVariantAurora';
+
+export type LoginVariant = 'maison' | 'aurora';
+
+const STORAGE_KEY = 'essensys-lan-login-variant';
+
+function parseVariant(raw: string | null): LoginVariant {
+  if (raw === 'aurora' || raw === 'b' || raw === '2') return 'aurora';
+  return 'maison';
+}
 
 export function LoginPage() {
-  const { login } = useLanAuth();
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const variant = useMemo(() => {
+    const q = params.get('variant');
+    if (q) return parseVariant(q);
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored === 'aurora' ? 'aurora' : 'maison';
+  }, [params]);
 
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    try {
-      await login(email, password);
-      navigate('/dashboard', { replace: true });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Connexion impossible');
-    } finally {
-      setSubmitting(false);
-    }
+  const setVariant = (v: LoginVariant) => {
+    localStorage.setItem(STORAGE_KEY, v);
+    setParams({ variant: v }, { replace: true });
   };
 
+  if (variant === 'aurora') {
+    return (
+      <LoginVariantAurora
+        activeVariant="aurora"
+        onSwitchVariant={setVariant}
+      />
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white p-4">
-      <form onSubmit={onSubmit} className="w-full max-w-md space-y-4 bg-slate-800 p-8 rounded-xl shadow-lg">
-        <h1 className="text-2xl font-semibold">Essensys — connexion LAN</h1>
-        <p className="text-sm text-slate-300">mon.essensys.local</p>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-        <label className="block text-sm">
-          Email
-          <input
-            type="email"
-            required
-            className="mt-1 w-full rounded border border-slate-600 bg-slate-900 px-3 py-2"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </label>
-        <label className="block text-sm">
-          Mot de passe
-          <input
-            type="password"
-            required
-            className="mt-1 w-full rounded border border-slate-600 bg-slate-900 px-3 py-2"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full rounded bg-emerald-600 py-2 font-medium hover:bg-emerald-500 disabled:opacity-50"
-        >
-          {submitting ? 'Connexion…' : 'Se connecter'}
-        </button>
-      </form>
-    </div>
+    <LoginVariantMaison
+      activeVariant="maison"
+      onSwitchVariant={setVariant}
+    />
   );
 }

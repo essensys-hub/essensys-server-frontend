@@ -14,6 +14,7 @@ import {
   ScenariosPage,
   RegressionTestPage,
   LoginPage,
+  LoginPreviewPage,
   AccountSettingsPage,
   LanUsersAdminPage,
 } from './pages';
@@ -37,6 +38,7 @@ function App() {
         <BrowserRouter basename={routerBasename}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/login/preview" element={<LoginPreviewPage />} />
             <Route element={<LanAuthGate />}>
               <Route element={<MainLayout />}>
                 <Route index element={<Navigate to="/dashboard" replace />} />
