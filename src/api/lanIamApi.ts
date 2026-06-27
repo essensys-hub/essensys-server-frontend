@@ -72,3 +72,13 @@ export async function disableLanUser(id: number) {
     throw new Error(await parseError(res, 'Désactivation impossible'));
   }
 }
+
+export async function enableLanUser(id: number) {
+  const res = await fetch(`/api/admin/lan-users/${id}/enable`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res, 'Réactivation impossible'));
+  }
+}

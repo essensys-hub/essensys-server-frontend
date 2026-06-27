@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { navItems, adminNavItems } from './SidebarMenu';
+import { navItems, useAdminNavItems } from './SidebarMenu';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -9,6 +9,7 @@ interface MobileDrawerProps {
 }
 
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) => {
+  const adminNavItems = useAdminNavItems();
   // Prevent body scroll when drawer is open
   useEffect(() => {
     if (isOpen) {

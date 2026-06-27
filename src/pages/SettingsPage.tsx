@@ -6,7 +6,8 @@ import { SyncSettingsPanel } from '../components/Settings/SyncSettingsPanel';
 import { useTestMode } from '../context/TestModeContext';
 import { useTheme } from '../context/ThemeContext';
 import type { Theme } from '../context/ThemeContext';
-import { isLanIamEnabled, useLanAuth } from '../hooks/useLanAuth';
+import { useLanIamMode } from '../context/LanIamContext';
+import { useLanAuth } from '../hooks/useLanAuth';
 
 const STORAGE_KEY = 'essensys_backend_config';
 
@@ -51,7 +52,7 @@ export const SettingsPage: React.FC = () => {
 
   const { theme, setTheme } = useTheme();
   const { enabled: testMode, setEnabled: setTestMode } = useTestMode();
-  const lanIam = isLanIamEnabled();
+  const lanIam = useLanIamMode().enabled;
   const { user: lanUser, logout: lanLogout } = useLanAuth();
 
   const ThemeOption = ({ value, label, color }: { value: Theme; label: string; color: string }) => (

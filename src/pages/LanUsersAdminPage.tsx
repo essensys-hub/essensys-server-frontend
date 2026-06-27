@@ -5,11 +5,13 @@ import { PageHeader, ControlCard } from '../components/UI';
 import {
   createLanUser,
   disableLanUser,
+  enableLanUser,
   listLanUsers,
   resetLanUserPassword,
 } from '../api/lanIamApi';
 import type { LanUser } from '../hooks/useLanAuth';
-import { isLanIamEnabled, useLanAuth } from '../hooks/useLanAuth';
+import { useLanIamMode } from '../context/LanIamContext';
+import { useLanAuth } from '../hooks/useLanAuth';
 
 const ROLES = [
   { value: 'lan_user', label: 'Utilisateur' },
@@ -18,6 +20,7 @@ const ROLES = [
 ];
 
 export function LanUsersAdminPage() {
+  const { enabled: lanIam } = useLanIamMode();
   const { user } = useLanAuth();
   const [users, setUsers] = useState<LanUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +48,7 @@ export function LanUsersAdminPage() {
     }
   }, [user, load]);
 
-  if (!isLanIamEnabled()) {
+  if (!lanIam) {
     return <Navigate to="/settings" replace />;
   }
   if (user && user.role !== 'lan_admin') {
@@ -92,11 +95,21 @@ export function LanUsersAdminPage() {
     }
   };
 
+  const onEnable = async (id: number) => {
+    if (!window.confirm('Réactiver cet utilisateur ?')) return;
+    try {
+      await enableLanUser(id);
+      await load();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Erreur');
+    }
+  };
+
   return (
     <div>
       <PageHeader
-        title="Utilisateurs LAN"
-        description="Gestion des comptes mon.essensys.local"
+        title="Comptes .local"
+        description="Création, bannissement et réactivation des utilisateurs mon.essensys.local"
         icon={UsersIcon}
         backLink="/settings"
         backLabel="Paramètres"
@@ -185,7 +198,15 @@ export function LanUsersAdminPage() {
                     )}
                   </td>
                   <td className="py-2 space-x-2">
-                    {!u.disabled_at && (
+                    {u.disabled_at ? (
+                      <button
+                        type="button"
+                        className="text-green-700 hover:underline"
+                        onClick={() => void onEnable(u.id)}
+                      >
+                        Réactiver
+                      </button>
+                    ) : (
                       <>
                         <button
                           type="button"
@@ -200,7 +221,7 @@ export function LanUsersAdminPage() {
                             className="text-red-600 hover:underline"
                             onClick={() => void onDisable(u.id)}
                           >
-                            Désactiver
+                            Bannir
                           </button>
                         )}
                       </>

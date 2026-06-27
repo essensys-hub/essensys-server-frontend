@@ -2,10 +2,12 @@ import { useState, type FormEvent } from 'react';
 import { UserCircleIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard } from '../components/UI';
 import { changeLanPassword } from '../api/lanIamApi';
-import { isLanIamEnabled, useLanAuth } from '../hooks/useLanAuth';
+import { useLanIamMode } from '../context/LanIamContext';
+import { useLanAuth } from '../hooks/useLanAuth';
 import { Navigate } from 'react-router-dom';
 
 export function AccountSettingsPage() {
+  const { enabled: lanIam } = useLanIamMode();
   const { user } = useLanAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -14,7 +16,7 @@ export function AccountSettingsPage() {
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  if (!isLanIamEnabled()) {
+  if (!lanIam) {
     return <Navigate to="/settings" replace />;
   }
 

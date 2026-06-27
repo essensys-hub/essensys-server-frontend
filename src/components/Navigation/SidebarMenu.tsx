@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   HomeIcon,
@@ -13,7 +13,11 @@ import {
   VideoCameraIcon,
   BoltIcon,
   ClipboardDocumentCheckIcon,
+  UsersIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline';
+import { useLanAuth } from '../../hooks/useLanAuth';
+import { useLanIamMode } from '../../context/LanIamContext';
 
 interface NavItem {
   to: string;
@@ -21,7 +25,7 @@ interface NavItem {
   label: string;
 }
 
-const adminNavItems: NavItem[] = [
+const baseAdminNavItems: NavItem[] = [
   { to: '/admin/regression', icon: ClipboardDocumentCheckIcon, label: 'Tests non-régression' },
 ];
 
@@ -39,10 +43,27 @@ const navItems: NavItem[] = [
   { to: '/settings', icon: Cog6ToothIcon, label: 'Paramètres' },
 ];
 
+export function useAdminNavItems(): NavItem[] {
+  const { enabled } = useLanIamMode();
+  const { user } = useLanAuth();
+
+  return useMemo(() => {
+    const items = [...baseAdminNavItems];
+    if (enabled && user?.role === 'lan_admin') {
+      items.unshift(
+        { to: '/settings/users', icon: UsersIcon, label: 'Comptes .local' },
+        { to: '/settings/account', icon: UserCircleIcon, label: 'Mon compte' },
+      );
+    }
+    return items;
+  }, [enabled, user?.role]);
+}
+
 export const SidebarMenu: React.FC = () => {
+  const adminNavItems = useAdminNavItems();
+
   return (
     <aside className="hidden lg:flex lg:flex-col lg:w-60 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200 shadow-sm">
-      {/* Logo */}
       <div className="flex items-center h-16 px-6 border-b border-gray-200">
         <img 
           src="/images/logosml.png" 
@@ -51,7 +72,6 @@ export const SidebarMenu: React.FC = () => {
         />
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => (
           <NavLink
@@ -93,7 +113,6 @@ export const SidebarMenu: React.FC = () => {
         </div>
       </nav>
 
-      {/* Footer */}
       <div className="px-6 py-4 border-t border-gray-200">
         <p className="text-xs text-gray-500">Mon Essensys v1.2.0</p>
       </div>
@@ -101,5 +120,5 @@ export const SidebarMenu: React.FC = () => {
   );
 };
 
-export { navItems, adminNavItems };
+export { navItems, baseAdminNavItems as adminNavItems };
 export type { NavItem };

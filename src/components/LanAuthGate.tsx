@@ -1,15 +1,17 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useLanAuth } from '../hooks/useLanAuth';
+import { useLanIamMode } from '../context/LanIamContext';
 
 export function LanAuthGate() {
-  const { user, loading, enabled } = useLanAuth();
+  const { enabled, loading: modeLoading } = useLanIamMode();
+  const { user, loading } = useLanAuth();
   const location = useLocation();
 
   if (!enabled) {
     return <Outlet />;
   }
 
-  if (loading) {
+  if (modeLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         Chargement…

@@ -20,6 +20,7 @@ import {
 import { LanAuthGate } from './components/LanAuthGate';
 import { DashboardProvider } from './context/DashboardContext';
 import { ThemeProvider } from './context/ThemeContext';
+import { LanIamProvider } from './context/LanIamContext';
 import { TestModeProvider } from './context/TestModeContext';
 
 function App() {
@@ -62,7 +63,11 @@ function App() {
     </DashboardProvider>
   );
 
-  return <TestModeProvider>{app}</TestModeProvider>;
+  return (
+    <LanIamProvider>
+      <TestModeProvider>{app}</TestModeProvider>
+    </LanIamProvider>
+  );
 }
 
 export default App;

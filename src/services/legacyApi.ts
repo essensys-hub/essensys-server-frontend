@@ -1,5 +1,6 @@
 import type { DashboardState } from '../context/DashboardContext';
 import { getBackendUrl } from '../components/Dashboard/BackendConfig';
+import { resolveLanIamEnabled } from '../lib/lanIamMode';
 
 // Error class for authentication errors
 export class AuthenticationError extends Error {
@@ -13,12 +14,14 @@ export class AuthenticationError extends Error {
 const handleAuthError = (response: Response): void => {
     if (response.status === 401) {
         console.error('[AUTH] Erreur 401 - Authentification requise');
-        if (import.meta.env.VITE_LAN_IAM === 'true') {
-            window.location.href = '/login';
-            throw new AuthenticationError();
-        }
-        alert('Session expirée ou authentification requise. Veuillez vous reconnecter.');
-        window.location.reload();
+        void resolveLanIamEnabled().then((lanIam) => {
+            if (lanIam) {
+                window.location.href = '/login';
+            } else {
+                alert('Session expirée ou authentification requise. Veuillez vous reconnecter.');
+                window.location.reload();
+            }
+        });
         throw new AuthenticationError();
     }
 };

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useLanIamMode } from '../context/LanIamContext';
 
 export type LanUser = {
   id: number;
@@ -8,20 +9,16 @@ export type LanUser = {
   disabled_at?: string | null;
 };
 
-const lanIamEnabled = import.meta.env.VITE_LAN_IAM === 'true';
-
-export function isLanIamEnabled() {
-  return lanIamEnabled;
-}
-
 export function useLanAuth() {
+  const { enabled, loading: modeLoading } = useLanIamMode();
   const [user, setUser] = useState<LanUser | null>(null);
-  const [loading, setLoading] = useState(lanIamEnabled);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    if (!lanIamEnabled) {
+    if (!enabled) {
       setLoading(false);
+      setUser(null);
       return;
     }
     setLoading(true);
@@ -43,11 +40,12 @@ export function useLanAuth() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (modeLoading) return;
     void refresh();
-  }, [refresh]);
+  }, [refresh, modeLoading]);
 
   const login = async (email: string, password: string) => {
     const res = await fetch('/api/auth/login', {
@@ -71,5 +69,13 @@ export function useLanAuth() {
     setUser(null);
   };
 
-  return { user, loading, error, login, logout, refresh, enabled: lanIamEnabled };
+  return {
+    user,
+    loading: modeLoading || loading,
+    error,
+    login,
+    logout,
+    refresh,
+    enabled,
+  };
 }
