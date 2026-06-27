@@ -6,40 +6,23 @@ import { LoginVariantAurora } from '../components/Auth/LoginVariantAurora';
 
 export type LoginVariant = 'maison' | 'aurora';
 
-const STORAGE_KEY = 'essensys-lan-login-variant';
-
-function parseVariant(raw: string | null): LoginVariant {
+function parseVariant(raw: string | null): LoginVariant | null {
   if (raw === 'aurora' || raw === 'b' || raw === '2') return 'aurora';
-  return 'maison';
+  if (raw === 'maison' || raw === 'a' || raw === '1') return 'maison';
+  return null;
 }
 
+/** Login LAN — variante Aurora (B) par défaut ; `?variant=maison` pour l’ancienne proposition A. */
 export function LoginPage() {
-  const [params, setParams] = useSearchParams();
-  const variant = useMemo(() => {
-    const q = params.get('variant');
-    if (q) return parseVariant(q);
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored === 'aurora' ? 'aurora' : 'maison';
-  }, [params]);
+  const [params] = useSearchParams();
+  const variant = useMemo(
+    () => parseVariant(params.get('variant')) ?? 'aurora',
+    [params],
+  );
 
-  const setVariant = (v: LoginVariant) => {
-    localStorage.setItem(STORAGE_KEY, v);
-    setParams({ variant: v }, { replace: true });
-  };
-
-  if (variant === 'aurora') {
-    return (
-      <LoginVariantAurora
-        activeVariant="aurora"
-        onSwitchVariant={setVariant}
-      />
-    );
+  if (variant === 'maison') {
+    return <LoginVariantMaison />;
   }
 
-  return (
-    <LoginVariantMaison
-      activeVariant="maison"
-      onSwitchVariant={setVariant}
-    />
-  );
+  return <LoginVariantAurora />;
 }
