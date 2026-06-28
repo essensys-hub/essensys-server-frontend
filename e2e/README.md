@@ -6,9 +6,9 @@ Tests Playwright UI multi-device ESSENSYS pour valider les surfaces **local**, *
 
 - Ne jamais cibler une armoire client en écriture.
 - Les URLs par défaut sont des environnements démo :
-  - local : `https://demo.essensys.local`
+  - local : `https://mon.essensys.fr/demo/dashboard`
   - support OVH : `https://demo.essensys.fr`
-  - remote portail : `https://demo.portail.essensys.fr`
+  - remote portail : `https://demo.portal.essensys.fr`
 - La fixture `fixtures/no-armoire.ts` intercepte `**/api/**` et bloque tout POST/PUT/PATCH/DELETE non neutralisé.
 - Les routes dangereuses (`/inject`, `/web/actions`, `/scenarios/*/launch`) doivent avoir `test_mode=dry_run` ou `X-Essensys-Test-Mode: dry-run`; même dans ce cas, la fixture répond en mock pour éviter toute sortie armoire pendant les tests UI.
 - Pour pointer une URL non-démo en lecture seule, il faut explicitement définir `ESSENSYS_ALLOW_LIVE_READONLY=1`. Cela n'autorise jamais une écriture live.
@@ -18,8 +18,8 @@ Tests Playwright UI multi-device ESSENSYS pour valider les surfaces **local**, *
 | Cible | URL par défaut | Commande |
 |---|---|---|
 | `support-*` | `ESSENSYS_SUPPORT_URL` ou `https://demo.essensys.fr` | `npm run test:support` |
-| `local-*` | `ESSENSYS_LOCAL_URL` ou `https://demo.essensys.local` | `npm run test:local` |
-| `remote-*` | `ESSENSYS_PORTAL_URL` ou `https://demo.portail.essensys.fr` | `npm run test:remote` |
+| `local-*` | `ESSENSYS_LOCAL_URL` ou `https://mon.essensys.fr/demo/dashboard` | `npm run test:local` |
+| `remote-*` | `ESSENSYS_PORTAL_URL` ou `https://demo.portal.essensys.fr` | `npm run test:remote` |
 
 Devices principaux : `desktop`, `iphone`, `android`, `ipad`, `ecran-domo`.
 Profils écran domotique additionnels : `ecran-domo-compact` (800×480) et `ecran-domo-portrait` (600×1024).
@@ -44,8 +44,8 @@ La spec `tests/ui-smoke.spec.ts` produit des captures dans `artifacts/screenshot
 ## Variables
 
 - `ESSENSYS_SUPPORT_URL` — défaut `https://demo.essensys.fr`
-- `ESSENSYS_LOCAL_URL` — défaut `https://demo.essensys.local`
-- `ESSENSYS_PORTAL_URL` — défaut `https://demo.portail.essensys.fr`
+- `ESSENSYS_LOCAL_URL` — défaut `https://mon.essensys.fr/demo/dashboard`
+- `ESSENSYS_PORTAL_URL` — défaut `https://demo.portal.essensys.fr`
 - `ESSENSYS_BASIC_USER` / `ESSENSYS_BASIC_PASS` — uniquement si une démo locale protégée exige Basic Auth
 - `ESSENSYS_PORTAL_TOKEN` — uniquement pour les tests dry-run portail déjà existants
 - `ESSENSYS_ALLOW_LIVE_READONLY=1` — opt-in lecture seule hors démo, sans jamais désactiver `no-armoire`

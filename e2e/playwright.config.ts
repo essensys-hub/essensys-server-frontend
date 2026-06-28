@@ -2,8 +2,8 @@ import { defineConfig, devices, type Project } from '@playwright/test';
 import { ecranDomotiqueCompact, ecranDomotiqueLandscape, ecranDomotiquePortrait } from './devices/ecran-domotique';
 
 const supportURL = process.env.ESSENSYS_SUPPORT_URL ?? process.env.ESSENSYS_DEMO_URL ?? 'https://demo.essensys.fr';
-const localURL = process.env.ESSENSYS_LOCAL_URL ?? 'https://demo.essensys.local';
-const portalURL = process.env.ESSENSYS_PORTAL_URL ?? 'https://demo.portail.essensys.fr';
+const localURL = process.env.ESSENSYS_LOCAL_URL ?? 'https://mon.essensys.fr/demo/dashboard';
+const portalURL = process.env.ESSENSYS_PORTAL_URL ?? 'https://demo.portal.essensys.fr';
 const allowLiveReadonly = process.env.ESSENSYS_ALLOW_LIVE_READONLY === '1';
 
 type TargetId = 'support' | 'local' | 'remote';
@@ -23,12 +23,19 @@ type Device = {
 };
 
 function assertDemoOrExplicitReadonly(target: Target): void {
-  const hostname = new URL(target.baseURL).hostname;
-  const isDemo = hostname.startsWith('demo.') || hostname.endsWith('.local') || hostname === 'localhost' || hostname === '127.0.0.1';
+  const parsed = new URL(target.baseURL);
+  const hostname = parsed.hostname;
+  const path = parsed.pathname;
+  const isDemo =
+    hostname.startsWith('demo.') ||
+    hostname.endsWith('.local') ||
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    path.startsWith('/demo');
   if (!isDemo && !allowLiveReadonly) {
     throw new Error(
       `BLOQUÉ no-armoire: ${target.id} pointe vers ${target.baseURL}. ` +
-        'Utilise demo.essensys.local / demo.essensys.fr / demo.portail.essensys.fr ou définis ESSENSYS_ALLOW_LIVE_READONLY=1 pour lecture seule.',
+        'Utilise demo.essensys.fr / demo.portal.essensys.fr / mon.essensys.fr/demo/dashboard ou définis ESSENSYS_ALLOW_LIVE_READONLY=1 pour lecture seule.',
     );
   }
 }

@@ -45,9 +45,16 @@ async function safeFulfill(route: Route, request: Request, testInfo: TestInfo): 
 }
 
 export async function installNoArmoireGuard(page: Page, testInfo: TestInfo): Promise<void> {
-  await page.route('**/api/**', async (route) => {
+  await page.route('**/*', async (route) => {
     const request = route.request();
     const target = getTargetFromProject(testInfo.project.name);
+    const pathname = new URL(request.url()).pathname;
+    const isRuntimeApi = pathname.startsWith('/api/') || pathname.startsWith('/scenarios/');
+
+    if (!isRuntimeApi) {
+      await route.continue();
+      return;
+    }
 
     if (isDangerousMutation(request)) {
       if (!hasDryRun(request)) {
@@ -91,9 +98,9 @@ export async function installNoArmoireGuard(page: Page, testInfo: TestInfo): Pro
 }
 
 export const test = base.extend({
-  page: async ({ page }, use, testInfo) => {
+  page: async ({ page }, usePage, testInfo) => {
     await installNoArmoireGuard(page, testInfo);
-    await use(page);
+    await usePage(page);
   },
 });
 

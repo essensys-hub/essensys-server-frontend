@@ -3,7 +3,7 @@ import { test, expect } from '../fixtures/no-armoire';
 import { currentDevice, currentTarget, isCompactViewport } from '../pages/project';
 
 const pagesByTarget = {
-  support: ['/', '/dashboard'],
+  support: ['/', '/login'],
   local: ['/dashboard', '/shutters', '/scenarios'],
   remote: ['/dashboard', '/shutters', '/scenarios'],
   demo: ['/dashboard'],
