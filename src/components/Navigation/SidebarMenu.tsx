@@ -28,6 +28,7 @@ interface NavItem {
 
 const baseAdminNavItems: NavItem[] = [
   { to: '/admin/regression', icon: ClipboardDocumentCheckIcon, label: 'Tests non-régression' },
+  { to: '/admin/kitchen-shutter-test', icon: BeakerIcon, label: 'Console cuisine' },
 ];
 
 const navItems: NavItem[] = [

@@ -17,6 +17,7 @@ import {
   LoginPreviewPage,
   AccountSettingsPage,
   LanUsersAdminPage,
+  KitchenShutterTestConsolePage,
 } from './pages';
 import { LanAuthGate } from './components/LanAuthGate';
 import { DashboardProvider } from './context/DashboardContext';
@@ -56,6 +57,7 @@ function App() {
                 <Route path="/settings/account" element={<AccountSettingsPage />} />
                 <Route path="/settings/users" element={<LanUsersAdminPage />} />
                 <Route path="/admin/regression" element={<RegressionTestPage />} />
+                <Route path="/admin/kitchen-shutter-test" element={<KitchenShutterTestConsolePage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Route>
             </Route>

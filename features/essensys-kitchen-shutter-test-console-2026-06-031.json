@@ -1,0 +1,123 @@
+{
+  "$schema": "./schema/feature.schema.json",
+  "id": "essensys-kitchen-shutter-test-console-2026-06-031",
+  "title": "Kitchen shutter no-armoire diagnostic console",
+  "status": "in-progress",
+  "owner": "hermes",
+  "jira": {
+    "issue": "TBD",
+    "test_plan": null
+  },
+  "git": {
+    "branch": "feat/essensys-kitchen-shutter-test-console-2026-06-031",
+    "pr_url": null
+  },
+  "openspec": {
+    "change_id": "essensys-kitchen-shutter-test-console-2026-06-031",
+    "path": "openspec/changes/essensys-kitchen-shutter-test-console-2026-06-031",
+    "proposal": "openspec/changes/essensys-kitchen-shutter-test-console-2026-06-031/proposal.md",
+    "design": "openspec/changes/essensys-kitchen-shutter-test-console-2026-06-031/design.md",
+    "tasks": "openspec/changes/essensys-kitchen-shutter-test-console-2026-06-031/tasks.md",
+    "specs": [
+      "openspec/changes/essensys-kitchen-shutter-test-console-2026-06-031/specs/kitchen-shutter-console-ui/spec.md",
+      "openspec/changes/essensys-kitchen-shutter-test-console-2026-06-031/specs/kitchen-shutter-legacy-payload/spec.md",
+      "openspec/changes/essensys-kitchen-shutter-test-console-2026-06-031/specs/no-armoire-ux-regression/spec.md"
+    ]
+  },
+  "implementation": {
+    "paths": [
+      "src/pages/KitchenShutterTestConsolePage.tsx",
+      "src/pages/index.ts",
+      "src/App.tsx",
+      "src/components/Navigation/SidebarMenu.tsx",
+      "src/layouts/MainLayout.tsx"
+    ],
+    "primary_surface": "react-admin"
+  },
+  "userguide": {
+    "pages": [
+      "docs/features/kitchen-shutter-test-console.md"
+    ],
+    "language": "fr",
+    "i18n_keys": [],
+    "screenshots": []
+  },
+  "tests": {
+    "playwright": [
+      "e2e/tests/kitchen-shutter-test-console.spec.ts"
+    ],
+    "pytest": [],
+    "testthat": [],
+    "coverage_must_test": [
+      "affiche et simule les payloads legacy cuisine sans action armoire",
+      "ouvrir les deux volets cuisine affiche k 619 et v 3",
+      "fermer les deux volets cuisine affiche k 622 et v 3",
+      "le trigger scenario 590 vaut 1"
+    ],
+    "smoke_tags": [],
+    "ux_matrix": {
+      "required": true,
+      "devices": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "targets": [
+        "support"
+      ],
+      "required_projects": [
+        "support-desktop",
+        "support-iphone",
+        "support-ipad"
+      ],
+      "screenshots_required": true,
+      "visual_regression_required": true,
+      "no_armoire_required": true,
+      "notes": "Console dry-run: no real armoire request is allowed; Playwright guards mutation endpoints."
+    },
+    "ux_evidence": {
+      "playwright_report": null,
+      "screenshots": [],
+      "last_run_at": null,
+      "devices_validated": [],
+      "status": "not-run",
+      "reviewer": null,
+      "notes": "Set to passed only after running support-desktop, support-iphone and support-ipad."
+    }
+  },
+  "confluence": {
+    "space": "ESSENSYS",
+    "parent_page": "0",
+    "template": "feature-user-guide",
+    "draft_page_id": null,
+    "published_page_id": null
+  },
+  "release": {
+    "changelog_entry": "Added a no-armoire kitchen shutter diagnostic console for legacy payload verification.",
+    "target_tag": null,
+    "surfaces": [
+      "react-admin",
+      "server-frontend"
+    ],
+    "paths": []
+  },
+  "security": {
+    "sca_tool": "dependabot",
+    "dependabot_alerts_url": null,
+    "last_scan_at": null,
+    "cve_findings": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "secret_scan": {
+      "status": "clean",
+      "tool": "gitleaks",
+      "last_scan_at": null
+    },
+    "muted_findings": [],
+    "threat_model_url": null,
+    "owner_security": "hermes"
+  }
+}
