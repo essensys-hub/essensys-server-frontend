@@ -28,10 +28,8 @@ import { TestModeProvider } from './context/TestModeContext';
 function App() {
   const demoMode = import.meta.env.VITE_DEMO_MODE === 'true';
   const demoRoot = import.meta.env.VITE_DEMO_ROOT === 'true';
-  const routerBasename =
-    demoMode && !demoRoot
-      ? import.meta.env.BASE_URL.replace(/\/dashboard\/?$/, '')
-      : undefined;
+  const computedBase = import.meta.env.BASE_URL.replace(/\/dashboard\/?$/, '') || '/';
+  const routerBasename = demoMode && !demoRoot && computedBase !== '/' ? computedBase : undefined;
 
   const app = (
     <DashboardProvider>

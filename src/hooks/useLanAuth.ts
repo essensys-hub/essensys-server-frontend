@@ -7,6 +7,7 @@ export type LanUser = {
   role: string;
   display_name?: string;
   disabled_at?: string | null;
+  can_use_trusted_devices?: boolean;
 };
 
 export function useLanAuth() {
@@ -24,15 +25,30 @@ export function useLanAuth() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/user/me', { credentials: 'include' });
-      if (res.status === 401) {
+      const meRes = await fetch('/api/user/me', { credentials: 'include' });
+      if (meRes.status === 401) {
+        const autoRes = await fetch('/api/auth/auto-login', { credentials: 'include' });
+        if (autoRes.status === 204) {
+          setUser(null);
+          return;
+        }
+        if (autoRes.status === 409) {
+          setError('Plusieurs comptes correspondent à cet appareil. Connexion manuelle requise.');
+          setUser(null);
+          return;
+        }
+        if (autoRes.ok) {
+          const data = await autoRes.json();
+          setUser(data.user as LanUser);
+          return;
+        }
         setUser(null);
         return;
       }
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+      if (!meRes.ok) {
+        throw new Error(`HTTP ${meRes.status}`);
       }
-      const data = await res.json();
+      const data = await meRes.json();
       setUser(data.user as LanUser);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erreur auth');

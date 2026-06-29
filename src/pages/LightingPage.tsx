@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { LightBulbIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { LightBulbIcon, ExclamationTriangleIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 import { sendInjection } from '../services/legacyApi';
 import { useTestMode } from '../context/TestModeContext';
+import { useLastAction } from '../hooks';
 
 interface Light {
   id: string;
@@ -57,6 +58,8 @@ export const LightingPage: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { enabled: testMode } = useTestMode();
+  const { lastAction, polling, refetch } = useLastAction();
+  const armoireBusy = lastAction != null && !lastAction.isDone;
 
   const handleLightAction = async (light: Light, action: 'on' | 'off') => {
     const loadingKey = `${light.id}-${action}`;
@@ -70,7 +73,8 @@ export const LightingPage: React.FC = () => {
       if (mode === 'dry_run') {
         setSuccess(`${light.name} : test OK (mode test — non envoyé à l'armoire)`);
       } else {
-        setSuccess(`${light.name} : ${action === 'on' ? 'Allumé' : 'Éteint'}`);
+        setSuccess(`${light.name} : commande envoyée — l'armoire exécute sous ~5 s`);
+        void refetch();
       }
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Erreur commande';
@@ -98,7 +102,8 @@ export const LightingPage: React.FC = () => {
       if (anyDryRun) {
         setSuccess(`${groupName} : test OK (mode test — non envoyé)`);
       } else {
-        setSuccess(`${groupName} : Tous ${action === 'on' ? 'allumés' : 'éteints'}`);
+        setSuccess(`${groupName} : commandes envoyées — exécution sur l'armoire sous ~5 s`);
+        void refetch();
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erreur commande');
@@ -171,6 +176,17 @@ export const LightingPage: React.FC = () => {
         backLink="/dashboard"
         backLabel="Tableau de bord"
       />
+
+      {armoireBusy && (
+        <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
+          <ArrowPathIcon className={`w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5 ${polling ? 'animate-spin' : ''}`} />
+          <div className="text-sm text-blue-800">
+            <strong>Armoire en cours</strong> — dernière commande transmise, exécution en poll (~2–5 s).
+            {polling && ' Suivi automatique actif.'}
+            {' '}Vous pouvez envoyer un contre-ordre : les commandes rapprochées sont fusionnées côté cloud.
+          </div>
+        </div>
+      )}
 
       {/* Success Message */}
       {success && (

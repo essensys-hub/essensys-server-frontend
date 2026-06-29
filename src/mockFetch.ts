@@ -58,7 +58,6 @@ export function setupMocks() {
         }
 
         if (url.includes('/api/admin/exchange') && method === 'GET') {
-            // Temps de course des volets : valeurs de démonstration (secondes)
             const keysParam = new URL(url, window.location.origin).searchParams.get('keys') || '';
             const values = keysParam
                 .split(',')
@@ -73,13 +72,13 @@ export function setupMocks() {
 
         if (url.includes('/api/web/history/latest') && method === 'GET') {
             return jsonResponse({
-                message: "Success",
+                message: 'Success',
                 lastAction: {
                     id: 1,
-                    guid: "mock-guid",
+                    guid: 'mock-guid',
                     machineId: 99,
-                    actionType: "mock_type",
-                    actionInfo: "Mock action executed",
+                    actionType: 'mock_type',
+                    actionInfo: 'Mock action executed',
                     isDone: true,
                     timestamp: new Date().toISOString(),
                     indexes: []
@@ -107,7 +106,6 @@ export function setupMocks() {
         }
 
         if (url.includes('/snapshot') && method === 'GET') {
-            // Return a mock 1x1 transparent PNG blob
             const transparentPng = Uint8Array.from([
                 137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82,
                 0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137,
@@ -120,13 +118,147 @@ export function setupMocks() {
             });
         }
 
-        // Évite le parse JSON sur index.html quand un endpoint n'est pas mocké
+        if (url.includes('/api/auth/auto-login') && method === 'GET') {
+            return new Response(null, { status: 204 });
+        }
+
+        if (url.includes('/api/user/me') && method === 'GET') {
+            const wantsAdmin = window.location.pathname.includes('/settings/users');
+            return jsonResponse({
+                user: {
+                    id: wantsAdmin ? 1 : 2,
+                    email: wantsAdmin ? 'admin@essensys.local' : 'demo.user@essensys.local',
+                    role: wantsAdmin ? 'lan_admin' : 'lan_user',
+                    display_name: wantsAdmin ? 'Admin' : 'Demo User',
+                    can_use_trusted_devices: !wantsAdmin,
+                },
+            });
+        }
+
+        if (url.includes('/api/admin/lan-users') && method === 'GET') {
+            return jsonResponse({
+                users: [
+                    { id: 1, email: 'admin@essensys.local', role: 'lan_admin', display_name: 'Admin usine', disabled_at: null, can_use_trusted_devices: false },
+                    { id: 2, email: 'nicolas@rineau.eu', role: 'lan_admin', display_name: 'Nicolas', disabled_at: null, can_use_trusted_devices: true },
+                    { id: 3, email: 'demo.user@essensys.local', role: 'lan_user', display_name: 'Demo User', disabled_at: null, can_use_trusted_devices: true },
+                    { id: 4, email: 'guest@essensys.local', role: 'lan_guest', display_name: 'Invité', disabled_at: null, can_use_trusted_devices: true },
+                ]
+            });
+        }
+
+        if (url.includes('/api/user/me/trusted-devices/candidates') && method === 'GET') {
+            return jsonResponse({
+                candidates: [
+                    { mac_address: 'AA:BB:CC:DD:EE:01', device_label: '192.168.0.21', source_ip: '192.168.0.21', last_seen_at: new Date().toISOString() },
+                ]
+            });
+        }
+
+        if (url.includes('/api/admin/trusted-devices/candidates') && method === 'GET') {
+            return jsonResponse({
+                candidates: [
+                    {
+                        mac_address: 'AA:BB:CC:DD:EE:03',
+                        device_label: '192.168.0.40',
+                        source_ip: '192.168.0.40',
+                        last_seen_at: new Date().toISOString(),
+                        lan_user_id: 2,
+                        lan_user_email: 'demo.user@essensys.local',
+                        lan_user_role: 'lan_user',
+                        lan_user_display_name: 'Demo User',
+                    },
+                    {
+                        mac_address: 'AA:BB:CC:DD:EE:04',
+                        device_label: '192.168.0.33',
+                        source_ip: '192.168.0.33',
+                        last_seen_at: new Date().toISOString(),
+                        lan_user_id: 3,
+                        lan_user_email: 'guest@essensys.local',
+                        lan_user_role: 'lan_guest',
+                        lan_user_display_name: 'Invité',
+                    },
+                ]
+            });
+        }
+
+        if (url.includes('/api/user/me/trusted-devices') && method === 'GET') {
+            return jsonResponse({
+                devices: [
+                    {
+                        id: 10,
+                        lan_user_id: 2,
+                        mac_address: 'AA:BB:CC:DD:EE:01',
+                        device_label: 'iPhone Nicolas',
+                        trust_mode: 'temporary',
+                        expires_at: new Date(Date.now() + 45 * 24 * 3600 * 1000).toISOString(),
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                    },
+                ]
+            });
+        }
+
+        if (url.includes('/api/admin/trusted-devices') && method === 'GET') {
+            return jsonResponse({
+                devices: [
+                    {
+                        id: 20,
+                        lan_user_id: 3,
+                        lan_user_email: 'guest@essensys.local',
+                        lan_user_role: 'lan_guest',
+                        mac_address: 'AA:BB:CC:DD:EE:03',
+                        device_label: 'Tablette entrée',
+                        trust_mode: 'permanent',
+                        expires_at: null,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                    },
+                ]
+            });
+        }
+
+        if (url.includes('/api/user/me/trusted-devices') && method === 'POST') {
+            const body = init?.body ? JSON.parse(String(init.body)) : {};
+            return jsonResponse({
+                device: {
+                    id: 99,
+                    lan_user_id: 2,
+                    mac_address: body.mac_address,
+                    device_label: body.device_label || body.mac_address,
+                    trust_mode: 'temporary',
+                    expires_at: new Date(Date.now() + 60 * 24 * 3600 * 1000).toISOString(),
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                },
+            }, 201);
+        }
+
+        if (url.includes('/api/admin/trusted-devices') && method === 'POST') {
+            const body = init?.body ? JSON.parse(String(init.body)) : {};
+            return jsonResponse({
+                device: {
+                    id: 100,
+                    lan_user_id: body.lan_user_id,
+                    lan_user_email: body.lan_user_id === 3 ? 'guest@essensys.local' : 'demo.user@essensys.local',
+                    mac_address: body.mac_address,
+                    device_label: body.device_label || body.mac_address,
+                    trust_mode: 'permanent',
+                    expires_at: null,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                },
+            }, 201);
+        }
+
+        if (/\/api\/(user\/me|admin)\/trusted-devices\/.+/.test(url) && (method === 'DELETE' || method === 'POST')) {
+            return jsonResponse({ status: 'ok' });
+        }
+
         if (url.includes('/api/')) {
             console.warn(`[MOCK] Fallback générique pour ${method} ${url}`);
             return jsonResponse({ success: true, message: 'Mock fallback' });
         }
 
-        // Fallback to original fetch
         return originalFetch(input, init);
     };
 }
