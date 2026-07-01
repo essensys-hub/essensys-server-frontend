@@ -14,6 +14,7 @@ import {
   ChartBarIcon,
 } from '@heroicons/react/24/outline';
 import { CardSummary } from '../components/UI';
+import { ArmoireStatusPanel } from '../components/Dashboard/ArmoireStatusPanel';
 import { CameraCard } from '../components/UniFi';
 import { useLastAction } from '../hooks';
 import type { Camera } from '../services/unifiApi';
@@ -70,6 +71,8 @@ export const DashboardPage: React.FC = () => {
           Bienvenue sur Mon Essensys. Gérez votre domotique depuis cette interface.
         </p>
       </div>
+
+      <ArmoireStatusPanel />
 
       {/* Last Action Info */}
       {lastAction && (

@@ -66,6 +66,14 @@ export function setupMocks() {
             return jsonResponse({ values });
         }
 
+        if (url.includes('/api/admin/armoire/snapshot') && method === 'GET') {
+            const { MOCK_ARMOIRE_SNAPSHOT } = await import('./types/armoire');
+            return jsonResponse({
+                ...MOCK_ARMOIRE_SNAPSHOT,
+                last_poll_at: new Date().toISOString(),
+            });
+        }
+
         if (url.includes('/api/web/actions') && method === 'POST') {
             return jsonResponse({ success: true, message: 'Mock action sent' });
         }

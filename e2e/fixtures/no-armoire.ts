@@ -27,6 +27,30 @@ function isDangerousMutation(request: Request): boolean {
   return DANGEROUS_PATHS.some((pattern) => pattern.test(url.pathname));
 }
 
+const MOCK_ARMOIRE_SNAPSHOT = {
+  connected: true,
+  last_poll_at: new Date().toISOString(),
+  client_id: 'mock-armoire-e2e',
+  identity: { firmware_embedded: '99', mac: 'd8:80:39:e1:35:ba' },
+  system: { heures_creuses: true, delestage: false, secouru: false },
+  alarm: { mode: 'croisière', step: 'croisière', armed: true, triggered: false, water_leak: false },
+  comfort: {
+    heating: { zone_jour: { consigne: 'CONFORT', mode: 'automatique' } },
+    cumulus: 'gestion HC',
+    scenario: 'Je sors',
+  },
+  energy: { tariff: 'HC/HP', apparent_power_va: 1200 },
+  raw_missing: [],
+};
+
+async function fulfillArmoireSnapshot(route: Route): Promise<void> {
+  await route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ ...MOCK_ARMOIRE_SNAPSHOT, last_poll_at: new Date().toISOString() }),
+  });
+}
+
 async function safeFulfill(route: Route, request: Request, testInfo: TestInfo): Promise<void> {
   const target = getTargetFromProject(testInfo.project.name);
   await route.fulfill({
@@ -56,6 +80,11 @@ export async function installNoArmoireGuard(page: Page, testInfo: TestInfo): Pro
       return;
     }
 
+    if (pathname === '/api/admin/armoire/snapshot' && request.method() === 'GET') {
+      await fulfillArmoireSnapshot(route);
+      return;
+    }
+
     if (isDangerousMutation(request)) {
       if (!hasDryRun(request)) {
         await route.fulfill({
@@ -70,7 +99,6 @@ export async function installNoArmoireGuard(page: Page, testInfo: TestInfo): Pro
         return;
       }
 
-      // Même en dry-run, les cibles demo/support/local/remote demandées ici restent neutralisées côté navigateur.
       await safeFulfill(route, request, testInfo);
       return;
     }
