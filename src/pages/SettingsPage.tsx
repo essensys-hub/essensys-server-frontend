@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon, ServerStackIcon, ArrowTopRightOnSquareIcon, ChartBarIcon, BeakerIcon, UserCircleIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon, ServerStackIcon, ArrowTopRightOnSquareIcon, ChartBarIcon, BeakerIcon, UserCircleIcon, UsersIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 import { SyncSettingsPanel } from '../components/Settings/SyncSettingsPanel';
 import { useTestMode } from '../context/TestModeContext';
@@ -217,6 +217,15 @@ export const SettingsPage: React.FC = () => {
                     <UserCircleIcon className="w-4 h-4" />
                     Mon compte
                   </Link>
+                  {lanUser?.role !== 'lan_guest' && (
+                    <Link
+                      to="/settings/audit"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-sm font-medium rounded-lg hover:bg-gray-50"
+                    >
+                      <ClipboardDocumentListIcon className="w-4 h-4" />
+                      Journal d'activité
+                    </Link>
+                  )}
                   {lanUser?.role === 'lan_admin' && (
                     <Link
                       to="/settings/users"

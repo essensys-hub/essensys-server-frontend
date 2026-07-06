@@ -17,12 +17,14 @@ import {
   LoginPreviewPage,
   AccountSettingsPage,
   LanUsersAdminPage,
+  AuditTrailPage,
   KitchenShutterTestConsolePage,
 } from './pages';
 import { LanAuthGate } from './components/LanAuthGate';
 import { DashboardProvider } from './context/DashboardContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { LanIamProvider } from './context/LanIamContext';
+import { LanAuthProvider } from './context/LanAuthContext';
 import { TestModeProvider } from './context/TestModeContext';
 
 function App() {
@@ -54,6 +56,7 @@ function App() {
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/settings/account" element={<AccountSettingsPage />} />
                 <Route path="/settings/users" element={<LanUsersAdminPage />} />
+                <Route path="/settings/audit" element={<AuditTrailPage />} />
                 <Route path="/admin/regression" element={<RegressionTestPage />} />
                 <Route path="/admin/kitchen-shutter-test" element={<KitchenShutterTestConsolePage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -67,7 +70,9 @@ function App() {
 
   return (
     <LanIamProvider>
-      <TestModeProvider>{app}</TestModeProvider>
+      <LanAuthProvider>
+        <TestModeProvider>{app}</TestModeProvider>
+      </LanAuthProvider>
     </LanIamProvider>
   );
 }

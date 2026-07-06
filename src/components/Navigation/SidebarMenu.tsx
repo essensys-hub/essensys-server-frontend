@@ -13,6 +13,7 @@ import {
   VideoCameraIcon,
   BoltIcon,
   ClipboardDocumentCheckIcon,
+  ClipboardDocumentListIcon,
   UsersIcon,
   UserCircleIcon,
 } from '@heroicons/react/24/outline';
@@ -54,6 +55,9 @@ export function useAdminNavItems(): NavItem[] {
     if (!enabled || !user) return items;
     if (user.role === 'lan_admin') {
       items.unshift({ to: '/settings/users', icon: UsersIcon, label: 'Comptes .local' });
+    }
+    if (user.role === 'lan_admin' || user.role === 'lan_user') {
+      items.unshift({ to: '/settings/audit', icon: ClipboardDocumentListIcon, label: "Journal d'activité" });
     }
     items.unshift({ to: '/settings/account', icon: UserCircleIcon, label: 'Mon compte' });
     return items;

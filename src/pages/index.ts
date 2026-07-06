@@ -14,4 +14,5 @@ export { LoginPreviewPage } from './LoginPreviewPage';
 export { LoginPage } from './LoginPage';
 export { AccountSettingsPage } from './AccountSettingsPage';
 export { LanUsersAdminPage } from './LanUsersAdminPage';
+export { AuditTrailPage } from './AuditTrailPage';
 export { KitchenShutterTestConsolePage } from './KitchenShutterTestConsolePage';

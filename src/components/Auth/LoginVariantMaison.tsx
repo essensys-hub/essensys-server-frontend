@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { usePostLoginNavigate } from '../../hooks/usePostLoginNavigate';
 import { LanLoginForm } from './LanLoginForm';
 
 type Props = {
@@ -7,7 +7,7 @@ type Props = {
 };
 
 export function LoginVariantMaison({ onSwitchVariant, activeVariant = 'maison' }: Props) {
-  const navigate = useNavigate();
+  const onSuccessNavigate = usePostLoginNavigate();
 
   return (
     <div className="lan-login-root lan-login-maison">
@@ -19,7 +19,7 @@ export function LoginVariantMaison({ onSwitchVariant, activeVariant = 'maison' }
         <LanLoginForm
           showLogoInCard={false}
           subtitle="Connectez-vous pour piloter votre domotique locale"
-          onSuccessNavigate={() => navigate('/dashboard', { replace: true })}
+          onSuccessNavigate={onSuccessNavigate}
           footer={
             onSwitchVariant ? (
               <VariantSwitch active={activeVariant} onSwitch={onSwitchVariant} />

@@ -1,8 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { usePostLoginNavigate } from '../../hooks/usePostLoginNavigate';
 import { LanLoginForm } from './LanLoginForm';
 
 export function LoginVariantAurora() {
-  const navigate = useNavigate();
+  const onSuccessNavigate = usePostLoginNavigate();
 
   return (
     <div className="lan-login-root lan-login-aurora">
@@ -11,7 +11,7 @@ export function LoginVariantAurora() {
         <div className="lan-login-aurora__panel">
           <LanLoginForm
             subtitle="Accès administration de votre gateway Essensys"
-            onSuccessNavigate={() => navigate('/dashboard', { replace: true })}
+            onSuccessNavigate={onSuccessNavigate}
           />
         </div>
         <aside className="lan-login-aurora__hero">

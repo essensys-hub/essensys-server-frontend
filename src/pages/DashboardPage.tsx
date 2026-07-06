@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { CardSummary } from '../components/UI';
 import { ArmoireStatusPanel } from '../components/Dashboard/ArmoireStatusPanel';
+import { PluginCard } from '../components/Plugins/PluginCard';
 import { CameraCard } from '../components/UniFi';
 import { useLastAction } from '../hooks';
 import type { Camera } from '../services/unifiApi';
@@ -73,6 +74,11 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       <ArmoireStatusPanel />
+
+      {/* Plugins (framework) — tuile Solaire Sungrow, lecture seule */}
+      <div className="mt-6 mb-2">
+        <PluginCard pluginId="sungrow-solar" fallbackTitle="Solaire" />
+      </div>
 
       {/* Last Action Info */}
       {lastAction && (
