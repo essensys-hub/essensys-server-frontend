@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Cog6ToothIcon, CheckCircleIcon, ShieldCheckIcon, ExclamationTriangleIcon, ServerStackIcon, ArrowTopRightOnSquareIcon, ChartBarIcon, BeakerIcon, UserCircleIcon, UsersIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 import { SyncSettingsPanel } from '../components/Settings/SyncSettingsPanel';
+import { PluginManager } from '../lib/plugin-renderer';
+import '../lib/plugin-renderer/plugin.css';
 import { useTestMode } from '../context/TestModeContext';
 import { useTheme } from '../context/ThemeContext';
 import type { Theme } from '../context/ThemeContext';
@@ -97,6 +99,13 @@ export const SettingsPage: React.FC = () => {
 
       <div className="space-y-6">
         <SyncSettingsPanel />
+
+        <ControlCard
+          title="Plugins"
+          description="Options installées sur la passerelle (framework de plugins) : activer, désactiver, désinstaller"
+        >
+          <PluginManager canAdmin={!lanIam || lanUser?.role === 'lan_admin'} />
+        </ControlCard>
 
         <ControlCard title="Mode test" description="Valider les commandes sans envoi à l'armoire (dry-run)">
           <label className="flex items-center gap-3 cursor-pointer">

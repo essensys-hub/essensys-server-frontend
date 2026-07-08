@@ -22,7 +22,7 @@ header='// ⚠️ SYNCED depuis essensys-plugin-framework/ts/src — NE PAS ÉDI
 // Modifier dans le dépôt framework puis relancer scripts/sync-plugin-renderer.sh
 '
 
-for f in descriptor.ts noArmoire.ts client.ts renderer.tsx index.ts; do
+for f in descriptor.ts noArmoire.ts client.ts renderer.tsx manager.tsx index.ts; do
   { printf '%s\n' "$header"; cat "$SRC/$f"; } > "$DST/$f"
 done
 cp "$SRC/plugin.css" "$DST/plugin.css"
