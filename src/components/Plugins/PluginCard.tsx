@@ -3,12 +3,14 @@ import {
   PluginClient,
   PluginPanel,
   type Descriptor,
+  type Point,
   type Reading,
 } from '../../lib/plugin-renderer';
 import '../../lib/plugin-renderer/plugin.css';
 
 const client = new PluginClient();
 const POLL_MS = 10_000;
+const HISTORY_POLL_MS = 60_000;
 
 interface PluginCardProps {
   pluginId: string;
@@ -23,6 +25,7 @@ interface PluginCardProps {
 export function PluginCard({ pluginId, fallbackTitle = '' }: PluginCardProps): React.JSX.Element | null {
   const [descriptor, setDescriptor] = useState<Descriptor | undefined>();
   const [reading, setReading] = useState<Reading | undefined>();
+  const [history, setHistory] = useState<Point[] | undefined>();
   const [available, setAvailable] = useState(true);
 
   useEffect(() => {
@@ -49,6 +52,26 @@ export function PluginCard({ pluginId, fallbackTitle = '' }: PluginCardProps): R
     };
   }, [pluginId]);
 
+  // Série du jour pour la courbe du dashboard (si le descripteur en déclare une).
+  const chartMetric = descriptor?.dashboard?.chart?.metric;
+  useEffect(() => {
+    if (!chartMetric) return;
+    let alive = true;
+    const poll = () =>
+      client
+        .history(pluginId, chartMetric, 24)
+        .then((h) => alive && setHistory(h.points))
+        .catch(() => {
+          /* la courbe affiche "historique en construction" tant que rien n'arrive */
+        });
+    poll();
+    const id = window.setInterval(poll, HISTORY_POLL_MS);
+    return () => {
+      alive = false;
+      window.clearInterval(id);
+    };
+  }, [pluginId, chartMetric]);
+
   if (!available) {
     return (
       <PluginPanel
@@ -59,5 +82,5 @@ export function PluginCard({ pluginId, fallbackTitle = '' }: PluginCardProps): R
   }
   if (!descriptor) return null;
 
-  return <PluginPanel descriptor={descriptor} reading={reading} available={available} />;
+  return <PluginPanel descriptor={descriptor} reading={reading} history={history} available={available} />;
 }
