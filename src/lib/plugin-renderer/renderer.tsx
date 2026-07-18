@@ -570,6 +570,7 @@ export function PluginPanel({ descriptor, reading, history, available = true }: 
     <section className="ess-plugin ess-plugin--panel" data-plugin={descriptor.plugin_id}>
       <header>
         <h3>{descriptor.title}</h3>
+        {descriptor.read_only && <span className="ess-plugin__ro">lecture seule</span>}
         {reading?.stale && <StaleBadge />}
         {hasFlow && hasDash && (
           <div className="ess-plugin__views" role="tablist" aria-label="Vue du plugin">
@@ -593,7 +594,6 @@ export function PluginPanel({ descriptor, reading, history, available = true }: 
             </button>
           </div>
         )}
-        {descriptor.read_only && <span className="ess-plugin__ro">lecture seule</span>}
       </header>
       {dash ? (
         showFlow && dash.flow ? (

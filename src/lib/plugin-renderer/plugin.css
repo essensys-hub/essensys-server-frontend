@@ -14,6 +14,7 @@
 
 .ess-plugin header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
@@ -47,7 +48,8 @@
 .ess-plugin__ro {
   font-size: 10px;
   color: var(--essensys-text-muted, #6b7280);
-  margin-left: auto;
+  margin-left: 0;
+  white-space: nowrap;
 }
 
 .ess-plugin__metrics {
@@ -295,9 +297,6 @@
   background: var(--essensys-bg-page, #f8f8f8);
   border: 1px solid var(--essensys-border, #e2e8f0);
   border-radius: 9px;
-}
-.ess-plugin__views + .ess-plugin__ro {
-  margin-left: 10px;
 }
 .ess-plugin__views button {
   border: 0;
