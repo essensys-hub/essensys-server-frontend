@@ -17,6 +17,7 @@ import type {
   Reading,
   Tone,
 } from "./descriptor";
+import type { HistoryRange } from "./client";
 
 export interface RenderProps {
   descriptor: Descriptor;
@@ -25,7 +26,21 @@ export interface RenderProps {
   history?: Point[];
   /** false si le plugin n'est pas disponible sur ce périmètre. */
   available?: boolean;
+  /** période affichée par la courbe (chips jour/semaine/mois/année). */
+  historyRange?: HistoryRange;
+  /** l'hôte re-fetch l'historique pour la nouvelle période. */
+  onHistoryRangeChange?: (r: HistoryRange) => void;
 }
+
+const RANGE_LABEL: Record<HistoryRange, string> = {
+  day: "Jour",
+  week: "Semaine",
+  month: "Mois",
+  year: "Année",
+};
+
+/** Métriques "aujourd'hui" : sans objet hors de la période jour. */
+const TODAY_ONLY_METRICS = new Set(["pv_energy_today", "battery_charge_today"]);
 
 function findSample(reading: Reading | undefined, metric: string) {
   return reading?.samples.find((x) => x.metric === metric);
@@ -213,13 +228,45 @@ function GaugeCard({ gauge, reading }: { gauge: GaugeSpec; reading?: Reading }):
   );
 }
 
-/** Fenêtre du jour : 06 h → 21 h locale. */
-function dayWindow(): { start: Date; end: Date } {
-  const start = new Date();
-  start.setHours(6, 0, 0, 0);
+/** Fenêtre de la courbe : jour = 06 h → 21 h locale, sinon pleine étendue récupérée. */
+function chartWindow(range: HistoryRange): { start: Date; end: Date } {
   const end = new Date();
-  end.setHours(21, 0, 0, 0);
+  if (range === "day") {
+    const start = new Date();
+    start.setHours(6, 0, 0, 0);
+    end.setHours(21, 0, 0, 0);
+    return { start, end };
+  }
+  const start = new Date(end);
+  if (range === "week") start.setDate(start.getDate() - 7);
+  if (range === "month") start.setDate(start.getDate() - 30);
+  if (range === "year") start.setFullYear(start.getFullYear() - 1);
   return { start, end };
+}
+
+function RangeChips({
+  range,
+  onChange,
+}: {
+  range: HistoryRange;
+  onChange: (r: HistoryRange) => void;
+}): React.JSX.Element {
+  return (
+    <div className="ess-chart__ranges" role="tablist" aria-label="Période">
+      {(["day", "week", "month", "year"] as const).map((r) => (
+        <button
+          key={r}
+          type="button"
+          role="tab"
+          aria-selected={range === r}
+          className={range === r ? "is-active" : ""}
+          onClick={() => onChange(r)}
+        >
+          {RANGE_LABEL[r]}
+        </button>
+      ))}
+    </div>
+  );
 }
 
 function ChartCard({
@@ -227,13 +274,17 @@ function ChartCard({
   reading,
   history,
   pluginId,
+  range = "day",
+  onRangeChange,
 }: {
   chart: ChartSpec;
   reading?: Reading;
   history?: Point[];
   pluginId: string;
+  range?: HistoryRange;
+  onRangeChange?: (r: HistoryRange) => void;
 }): React.JSX.Element {
-  const { start, end } = dayWindow();
+  const { start, end } = chartWindow(range);
   const pts = (history ?? [])
     .map((p) => ({ t: new Date(p.ts).getTime(), v: p.value }))
     .filter((p) => p.t >= start.getTime() && p.t <= end.getTime())
@@ -256,13 +307,29 @@ function ChartCard({
   );
   const color = toneColor(chart.tone ?? "solar");
   const gradId = `ess-fill-${pluginId}-${chart.metric}`;
+  const unit = chart.unit ?? "";
+  const axis =
+    range === "day"
+      ? `${unit} · 06 h → 21 h`
+      : range === "week"
+        ? `${unit} · 7 j`
+        : range === "month"
+          ? `${unit} · 30 j`
+          : `${unit} · 12 mois`;
+  const title = range === "day" ? chart.title : "Production";
+  const stats = chart.stats?.filter((st) => range === "day" || st.peak || !TODAY_ONLY_METRICS.has(st.metric ?? ""));
 
   return (
     <div className="ess-chart">
       <div className="ess-panel-hd">
-        <h4>{chart.title}</h4>
-        <span className="ess-kpi__label">{chart.unit ?? ""} · 06 h → 21 h</span>
+        <h4>{title}</h4>
+        <span className="ess-kpi__label">{axis}</span>
       </div>
+      {onRangeChange && (
+        <div className="ess-chart__toolbar">
+          <RangeChips range={range} onChange={onRangeChange} />
+        </div>
+      )}
       {pts.length >= 2 ? (
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img" aria-label={chart.title}>
           <defs>
@@ -284,11 +351,15 @@ function ChartCard({
           )}
         </svg>
       ) : (
-        <p className="ess-chart__empty">Historique en construction — la courbe apparaîtra au fil de la journée.</p>
+        <p className="ess-chart__empty">
+          {range === "day"
+            ? "Historique en construction — la courbe apparaîtra au fil de la journée."
+            : "Pas encore de données pour cette période"}
+        </p>
       )}
-      {chart.stats?.length ? (
+      {stats?.length ? (
         <div className="ess-chart__meta">
-          {chart.stats.map((st) => {
+          {stats.map((st) => {
             let value = "—";
             let unit = "";
             let sub = st.label;
@@ -515,7 +586,13 @@ function FlowCard({ flow, reading }: { flow: FlowSpec; reading?: Reading }): Rea
 }
 
 /** Tableau de bord riche décrit par descriptor.dashboard. */
-function PluginDashboard({ descriptor, reading, history }: RenderProps): React.JSX.Element {
+function PluginDashboard({
+  descriptor,
+  reading,
+  history,
+  historyRange = "day",
+  onHistoryRangeChange,
+}: RenderProps): React.JSX.Element {
   const dash = descriptor.dashboard!;
   return (
     <div className="ess-dash">
@@ -530,7 +607,14 @@ function PluginDashboard({ descriptor, reading, history }: RenderProps): React.J
         <div className="ess-dash__lower">
           {dash.gauge && <GaugeCard gauge={dash.gauge} reading={reading} />}
           {dash.chart && (
-            <ChartCard chart={dash.chart} reading={reading} history={history} pluginId={descriptor.plugin_id} />
+            <ChartCard
+              chart={dash.chart}
+              reading={reading}
+              history={history}
+              pluginId={descriptor.plugin_id}
+              range={historyRange}
+              onRangeChange={onHistoryRangeChange}
+            />
           )}
         </div>
       )}
@@ -549,7 +633,14 @@ function initialView(pluginId: string): PanelView {
 }
 
 /** Page/panneau détail : dashboard riche si déclaré, sinon liste des métriques. */
-export function PluginPanel({ descriptor, reading, history, available = true }: RenderProps): React.JSX.Element {
+export function PluginPanel({
+  descriptor,
+  reading,
+  history,
+  available = true,
+  historyRange,
+  onHistoryRangeChange,
+}: RenderProps): React.JSX.Element {
   const [view, setView] = React.useState<PanelView>(() => initialView(descriptor.plugin_id));
   const dash = descriptor.dashboard;
   const hasFlow = Boolean(dash?.flow);
@@ -601,7 +692,13 @@ export function PluginPanel({ descriptor, reading, history, available = true }: 
             <FlowCard flow={dash.flow} reading={reading} />
           </div>
         ) : (
-          <PluginDashboard descriptor={descriptor} reading={reading} history={history} />
+          <PluginDashboard
+            descriptor={descriptor}
+            reading={reading}
+            history={history}
+            historyRange={historyRange}
+            onHistoryRangeChange={onHistoryRangeChange}
+          />
         )
       ) : (
         <dl className="ess-plugin__metrics">

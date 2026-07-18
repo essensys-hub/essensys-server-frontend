@@ -10,6 +10,9 @@ export interface PluginClientOptions {
   baseUrl?: string;
 }
 
+/** Fenêtre de la courbe historique (chips jour/semaine/mois/année). */
+export type HistoryRange = "day" | "week" | "month" | "year";
+
 export class PluginClient {
   private base: string;
   constructor(opts: PluginClientOptions = {}) {
@@ -31,11 +34,21 @@ export class PluginClient {
     return this.get<Reading>(`/api/plugins/${pluginId}/current`);
   }
 
-  /** Série historisée d'une métrique (48 h max) pour les courbes. */
-  history(pluginId: string, metric: string, hours = 24): Promise<History> {
-    return this.get<History>(
-      `/api/plugins/${pluginId}/history?metric=${encodeURIComponent(metric)}&hours=${hours}`,
-    );
+  /** Série historisée d'une métrique pour les courbes (fenêtre glissante ou range jour/semaine/mois/année). */
+  history(
+    pluginId: string,
+    metric: string,
+    opts: { hours?: number; range?: HistoryRange } | number = 24,
+  ): Promise<History> {
+    const q = new URLSearchParams({ metric });
+    if (typeof opts === "number") {
+      q.set("hours", String(opts));
+    } else if (opts.range) {
+      q.set("range", opts.range);
+    } else {
+      q.set("hours", String(opts.hours ?? 24));
+    }
+    return this.get<History>(`/api/plugins/${pluginId}/history?${q}`);
   }
 
   private async post<T>(path: string): Promise<T> {

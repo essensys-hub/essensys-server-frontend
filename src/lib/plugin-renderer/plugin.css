@@ -266,6 +266,35 @@
   color: var(--essensys-text-muted, #6b7280);
 }
 
+.ess-chart__toolbar {
+  padding: 0 18px;
+}
+
+.ess-chart__ranges {
+  display: inline-flex;
+  gap: 4px;
+  margin: 8px 0;
+  padding: 3px;
+  background: var(--essensys-bg-page, #f8f8f8);
+  border: 1px solid var(--essensys-border, #e2e8f0);
+  border-radius: 9px;
+}
+.ess-chart__ranges button {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  padding: 4px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  color: var(--essensys-text-muted, #6b7280);
+}
+.ess-chart__ranges button.is-active {
+  background: var(--essensys-primary, #2563eb);
+  color: #fff;
+}
+
 .ess-chart__meta {
   display: flex;
   gap: 22px;
