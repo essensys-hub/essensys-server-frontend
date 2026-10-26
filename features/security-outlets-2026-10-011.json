@@ -1,0 +1,134 @@
+{
+  "$schema": "./schema/feature.schema.json",
+  "id": "security-outlets-2026-10-011",
+  "title": "Piloter les prises de sécurité depuis les apps et le portail (cloud et local)",
+  "status": "proposed",
+  "owner": "hermes",
+  "jira": {
+    "issue": "TBD",
+    "test_plan": null
+  },
+  "git": {
+    "branch": "feat/security-outlets-2026-10-011",
+    "pr_url": null
+  },
+  "openspec": {
+    "change_id": "security-outlets-2026-10-011",
+    "path": "openspec/changes/security-outlets-2026-10-011",
+    "proposal": "openspec/changes/security-outlets-2026-10-011/proposal.md",
+    "design": "openspec/changes/security-outlets-2026-10-011/design.md",
+    "tasks": "openspec/changes/security-outlets-2026-10-011/tasks.md",
+    "specs": [
+      "openspec/changes/security-outlets-2026-10-011/specs/security-outlets-quality/spec.md",
+      "openspec/changes/security-outlets-2026-10-011/specs/security-outlets/spec.md"
+    ]
+  },
+  "implementation": {
+    "paths": [
+      "src/pages/SecurityPage.tsx",
+      "src/components/Security/SecurityOutletsCard.tsx",
+      "src/security/securityOutlets.ts",
+      "src/components/Scenarios/ScenarioEditorDrawer.tsx",
+      "src/types/armoire.ts",
+      "src/mockFetch.ts"
+    ],
+    "primary_surface": "react-admin"
+  },
+  "userguide": {
+    "pages": [
+      "docs/features/security-outlets.md"
+    ],
+    "language": "fr",
+    "i18n_keys": [],
+    "screenshots": []
+  },
+  "tests": {
+    "playwright": [
+      "e2e/tests/security-outlets.spec.ts"
+    ],
+    "pytest": [],
+    "testthat": [],
+    "coverage_must_test": [
+      "couper envoie 590 et 623 a 1",
+      "retablir envoie 623 a 2",
+      "annuler la confirmation n envoie rien",
+      "commandes desactivees hors ligne",
+      "etat inconnu sans indice 440"
+    ],
+    "smoke_tags": [
+      "@nr"
+    ],
+    "ux_matrix": {
+      "required": true,
+      "devices": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "targets": [
+        "local"
+      ],
+      "required_projects": [
+        "local-desktop",
+        "local-iphone",
+        "local-ipad"
+      ],
+      "screenshots_required": true,
+      "visual_regression_required": true,
+      "no_armoire_required": true,
+      "notes": "Page Sécurité du portail local, build démo servi en local (ESSENSYS_LOCAL_URL) ; fixture no-armoire et enregistrement des fetch, aucune requête armoire."
+    },
+    "ux_evidence": {
+      "playwright_report": null,
+      "screenshots": [],
+      "last_run_at": "2026-10-26",
+      "devices_validated": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "status": "passed",
+      "reviewer": null,
+      "notes": "local-desktop, local-iphone, local-ipad et local-ecran-domo verts sur le build démo ; local-android en fixme (débordement horizontal de la mise en page mobile, antérieur à la feature). Pas encore de capture de référence (toHaveScreenshot) : à produire au /checkup."
+    }
+  },
+  "confluence": {
+    "space": "ESSENSYS",
+    "parent_page": "0",
+    "template": "feature-user-guide",
+    "draft_page_id": null,
+    "published_page_id": null
+  },
+  "release": {
+    "changelog_entry": "Portail local : carte Prises de sécurité sur la page Sécurité et choix dans les scénarios (#36).",
+    "target_tag": null,
+    "surfaces": [
+      "react-admin",
+      "server-frontend"
+    ],
+    "paths": []
+  },
+  "security": {
+    "sca_tool": "dependabot",
+    "dependabot_alerts_url": null,
+    "last_scan_at": null,
+    "cve_findings": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "secret_scan": {
+      "status": "clean",
+      "tool": "gitleaks",
+      "last_scan_at": null
+    },
+    "muted_findings": [],
+    "threat_model_url": null,
+    "owner_security": "hermes"
+  },
+  "github": {
+    "issue": "essensys-hub/essensys-feature-lifecycle#36",
+    "project_item": "PVTI_lADODqt0Wc4BavHTzhDc1KI"
+  }
+}

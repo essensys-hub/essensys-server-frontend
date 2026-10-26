@@ -1,0 +1,6 @@
+schema: spec-driven
+
+context: |
+  Essensys — portail local de la gateway mon.essensys.local (React, Vite, TypeScript). Appelle essensys-server-backend (/api/admin/*, /api/scenarios*, session essensys_lan_session).
+  Gouvernance : essensys-feature-lifecycle/claude/GOVERNANCE.md (ticket GitHub Project #6, OpenSpec, /checkup, tests NR-*, jamais d'armoire réelle en test). Conventional commits référençant l'issue (#n). Français.
+  Commandes domotiques = injection k/v dans la table d'échange (indices legacy IoT : ne jamais les modifier).

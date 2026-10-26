@@ -62,7 +62,8 @@ export function setupMocks() {
             const values = keysParam
                 .split(',')
                 .filter((k) => k !== '')
-                .map((k) => ({ k: parseInt(k, 10), v: '25' }));
+                // 440 = état des prises de sécurité : pilotées dans la maison de démonstration.
+                .map((k) => ({ k: parseInt(k, 10), v: k === '440' ? '0' : '25' }));
             return jsonResponse({ values });
         }
 
@@ -92,6 +93,12 @@ export function setupMocks() {
                     indexes: []
                 }
             });
+        }
+
+        // Démo : aucun plugin installé. Sans cette réponse, la requête part vers le serveur statique
+        // et la carte Solaire du tableau de bord reçoit un descripteur invalide (page blanche).
+        if (url.includes('/api/plugins/')) {
+            return jsonResponse({ error: 'plugin non installé (démo)' }, 404);
         }
 
         if (url.includes('/api/unifi/cameras') && method === 'GET' && !url.includes('/snapshot')) {

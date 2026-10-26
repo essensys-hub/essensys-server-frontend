@@ -40,3 +40,4 @@ ds-bundle/
 e2e/artifacts/
 e2e/test-results/
 .artifacts/
+dist-e2e/

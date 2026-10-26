@@ -30,6 +30,8 @@ export interface ArmoireSnapshot {
     detection?: string;
     fraud?: string;
     bp_state?: string;
+    /** Indice 440 (security-outlets-2026-10-011). */
+    security_outlets?: 'cut' | 'piloted' | 'unknown';
   };
   comfort: {
     heating?: Record<string, ArmoireHeatingZone>;
@@ -66,6 +68,7 @@ export const MOCK_ARMOIRE_SNAPSHOT: ArmoireSnapshot = {
     armed: true,
     triggered: false,
     water_leak: false,
+    security_outlets: 'piloted',
   },
   comfort: {
     heating: {
