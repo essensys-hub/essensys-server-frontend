@@ -62,7 +62,8 @@ export function setupMocks() {
             const values = keysParam
                 .split(',')
                 .filter((k) => k !== '')
-                .map((k) => ({ k: parseInt(k, 10), v: '25' }));
+                // 440 = état des prises de sécurité : pilotées dans la maison de démonstration.
+                .map((k) => ({ k: parseInt(k, 10), v: k === '440' ? '0' : '25' }));
             return jsonResponse({ values });
         }
 

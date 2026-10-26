@@ -1,13 +1,24 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
-import { sendAlarmAction } from '../services/legacyApi';
+import { SecurityOutletsCard } from '../components/Security/SecurityOutletsCard';
+import { useArmoireSnapshot } from '../hooks/useArmoireSnapshot';
+import { useTestMode } from '../context/TestModeContext';
+import { getExchangeValues, sendAlarmAction, sendInjectionBatch } from '../services/legacyApi';
+import { SECURITY_OUTLETS_STATE_INDEX } from '../security/securityOutlets';
 
 export const SecurityPage: React.FC = () => {
   const [alarmCode, setAlarmCode] = useState('');
   const [loading, setLoading] = useState<'on' | 'off' | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const { snapshot } = useArmoireSnapshot();
+  const { enabled: testMode } = useTestMode();
+
+  const readOutletsState = useCallback(
+    async () => (await getExchangeValues([SECURITY_OUTLETS_STATE_INDEX]))[SECURITY_OUTLETS_STATE_INDEX],
+    [],
+  );
 
   const handleAlarmAction = async (action: 'on' | 'off') => {
     if (alarmCode.length !== 4) {
@@ -103,11 +114,18 @@ export const SecurityPage: React.FC = () => {
           </div>
         </ControlCard>
 
+        <SecurityOutletsCard
+          online={snapshot?.connected ?? false}
+          dryRun={testMode || import.meta.env.VITE_DEMO_MODE === 'true'}
+          readState={readOutletsState}
+          sendBatch={sendInjectionBatch}
+        />
+
         {/* Info Card */}
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <h4 className="font-medium text-blue-800 mb-1">Information</h4>
           <p className="text-sm text-blue-700">
-            Le système fonctionne en boucle ouverte : la commande est envoyée mais aucun retour d'état 
+            L'alarme fonctionne en boucle ouverte : la commande est envoyée mais aucun retour d'état
             n'est disponible. Vérifiez physiquement que l'alarme a bien changé d'état.
           </p>
         </div>

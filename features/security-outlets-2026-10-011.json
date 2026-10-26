@@ -26,15 +26,17 @@
   "implementation": {
     "paths": [
       "src/pages/SecurityPage.tsx",
+      "src/components/Security/SecurityOutletsCard.tsx",
+      "src/security/securityOutlets.ts",
       "src/components/Scenarios/ScenarioEditorDrawer.tsx",
-      "src/services/legacyApi.ts",
+      "src/types/armoire.ts",
       "src/mockFetch.ts"
     ],
     "primary_surface": "react-admin"
   },
   "userguide": {
     "pages": [
-      "docs/features/kitchen-shutter-test-console.md"
+      "docs/features/security-outlets.md"
     ],
     "language": "fr",
     "i18n_keys": [],
@@ -42,7 +44,7 @@
   },
   "tests": {
     "playwright": [
-      "e2e/tests/kitchen-shutter-test-console.spec.ts"
+      "e2e/tests/security-outlets.spec.ts"
     ],
     "pytest": [],
     "testthat": [],
@@ -53,7 +55,9 @@
       "commandes desactivees hors ligne",
       "etat inconnu sans indice 440"
     ],
-    "smoke_tags": [],
+    "smoke_tags": [
+      "@nr"
+    ],
     "ux_matrix": {
       "required": true,
       "devices": [
@@ -62,26 +66,30 @@
         "ipad"
       ],
       "targets": [
-        "support"
+        "local"
       ],
       "required_projects": [
-        "support-desktop",
-        "support-iphone",
-        "support-ipad"
+        "local-desktop",
+        "local-iphone",
+        "local-ipad"
       ],
       "screenshots_required": true,
       "visual_regression_required": true,
       "no_armoire_required": true,
-      "notes": "Console dry-run: no real armoire request is allowed; Playwright guards mutation endpoints."
+      "notes": "Page Sécurité du portail local, build démo servi en local (ESSENSYS_LOCAL_URL) ; fixture no-armoire et enregistrement des fetch, aucune requête armoire."
     },
     "ux_evidence": {
       "playwright_report": null,
       "screenshots": [],
-      "last_run_at": null,
-      "devices_validated": [],
-      "status": "not-run",
+      "last_run_at": "2026-10-26",
+      "devices_validated": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "status": "passed",
       "reviewer": null,
-      "notes": "Set to passed only after running support-desktop, support-iphone and support-ipad."
+      "notes": "local-desktop, local-iphone, local-ipad et local-ecran-domo verts sur le build démo ; local-android en fixme (débordement horizontal de la mise en page mobile, antérieur à la feature). Pas encore de capture de référence (toHaveScreenshot) : à produire au /checkup."
     }
   },
   "confluence": {

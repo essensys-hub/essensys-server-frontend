@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { ActionButton } from '../UI';
 import type { BitmaskField, ScenarioSlotDetail } from '../../services/scenarioApi';
+import { scenarioSecurityChoices, scenarioSecurityIndex } from '../../security/securityOutlets';
 
 interface ScenarioEditorDrawerProps {
   open: boolean;
@@ -51,13 +52,19 @@ export const ScenarioEditorDrawer: React.FC<ScenarioEditorDrawerProps> = ({
     setParams(map);
   }, [detail]);
 
+  // Prises de sécurité : Scenario_Securite, décalage 31 du bloc (security-outlets-2026-10-011).
+  const securityIndex =
+    detail && scenarioSecurityIndex(detail.base_index) <= detail.end_index
+      ? scenarioSecurityIndex(detail.base_index)
+      : null;
+
   const bitmaskIndices = useMemo(() => new Set(bitmasks.map((f) => f.index)), [bitmasks]);
 
   const advancedIndices = useMemo(() => {
     if (!detail) return [];
     const out: number[] = [];
     for (let i = detail.base_index; i <= detail.end_index; i++) {
-      if (!bitmaskIndices.has(i)) out.push(i);
+      if (!bitmaskIndices.has(i) && i !== scenarioSecurityIndex(detail.base_index)) out.push(i);
     }
     return out;
   }, [detail, bitmaskIndices]);
@@ -109,6 +116,23 @@ export const ScenarioEditorDrawer: React.FC<ScenarioEditorDrawerProps> = ({
           {loading && <p className="text-sm text-gray-500">Chargement…</p>}
           {!loading && tab === 'Lumières & volets' && (
             <div className="space-y-6">
+              {securityIndex !== null && (
+                <label className="block">
+                  <span className="block text-sm font-medium text-gray-800 mb-2">Prises de sécurité</span>
+                  <select
+                    aria-label="Prises de sécurité"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-1.5 text-sm"
+                    value={['0', '1', '2'].includes(params[securityIndex] ?? '0') ? (params[securityIndex] ?? '0') : '0'}
+                    onChange={(e) => setParams((prev) => ({ ...prev, [securityIndex]: e.target.value }))}
+                  >
+                    {scenarioSecurityChoices.map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               {bitmasks.map((field) => (
                 <div key={field.index}>
                   <h3 className="text-sm font-medium text-gray-800 mb-2">
