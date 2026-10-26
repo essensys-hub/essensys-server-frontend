@@ -8,7 +8,8 @@
     "test:local": "playwright test --project=local-desktop --project=local-iphone --project=local-android --project=local-ipad --project=local-ecran-domo",
     "test:remote": "playwright test --project=remote-desktop --project=remote-iphone --project=remote-android --project=remote-ipad --project=remote-ecran-domo",
     "test:device": "node scripts/test-device.mjs",
-    "test:update-snapshots": "playwright test --update-snapshots"
+    "test:update-snapshots": "playwright test --update-snapshots",
+    "test:demo": "ESSENSYS_DEMO_BUILD=1 ESSENSYS_LOCAL_URL=http://localhost:4183 playwright test demo.spec.ts security-outlets.spec.ts --project=local-desktop --project=local-iphone --project=local-ipad"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0"

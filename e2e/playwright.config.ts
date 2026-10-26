@@ -5,6 +5,8 @@ const supportURL = process.env.ESSENSYS_SUPPORT_URL ?? process.env.ESSENSYS_DEMO
 const localURL = process.env.ESSENSYS_LOCAL_URL ?? 'https://mon.essensys.fr/demo/dashboard';
 const portalURL = process.env.ESSENSYS_PORTAL_URL ?? 'https://demo.portal.essensys.fr';
 const allowLiveReadonly = process.env.ESSENSYS_ALLOW_LIVE_READONLY === '1';
+// `npm run test:demo` : build démo de ce dépôt (API simulée dans la page) servi en local, cible `local`.
+const demoBuild = process.env.ESSENSYS_DEMO_BUILD === '1';
 
 type TargetId = 'support' | 'local' | 'remote';
 type DeviceId = 'desktop' | 'iphone' | 'android' | 'ipad' | 'ecran-domo' | 'ecran-domo-compact' | 'ecran-domo-portrait';
@@ -109,4 +111,13 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: targets.flatMap((target) => matrixDevices.map((device) => projectFor(target, device))),
+  webServer: demoBuild
+    ? {
+        command: 'VITE_DEMO_MODE=true npx vite build --outDir dist-e2e && npx vite preview --outDir dist-e2e --port 4183 --strictPort',
+        cwd: '..',
+        url: 'http://localhost:4183/dashboard',
+        reuseExistingServer: false,
+        timeout: 120_000,
+      }
+    : undefined,
 });

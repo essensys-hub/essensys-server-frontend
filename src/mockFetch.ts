@@ -95,6 +95,12 @@ export function setupMocks() {
             });
         }
 
+        // Démo : aucun plugin installé. Sans cette réponse, la requête part vers le serveur statique
+        // et la carte Solaire du tableau de bord reçoit un descripteur invalide (page blanche).
+        if (url.includes('/api/plugins/')) {
+            return jsonResponse({ error: 'plugin non installé (démo)' }, 404);
+        }
+
         if (url.includes('/api/unifi/cameras') && method === 'GET' && !url.includes('/snapshot')) {
             return jsonResponse({
                 cameras: [
