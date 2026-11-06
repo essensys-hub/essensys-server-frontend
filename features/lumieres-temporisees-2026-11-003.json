@@ -1,0 +1,128 @@
+{
+  "$schema": "./schema/feature.schema.json",
+  "id": "lumieres-temporisees-2026-11-003",
+  "title": "Régler les temporisations des lumières depuis le portail local (menu central et fiche lumière)",
+  "status": "proposed",
+  "owner": "hermes",
+  "git": {
+    "branch": "feat/lumieres-temporisees-2026-11-003",
+    "pr_url": null
+  },
+  "openspec": {
+    "change_id": "lumieres-temporisees-2026-11-003",
+    "path": "openspec/changes/lumieres-temporisees-2026-11-003",
+    "proposal": "openspec/changes/lumieres-temporisees-2026-11-003/proposal.md",
+    "design": "openspec/changes/lumieres-temporisees-2026-11-003/design.md",
+    "tasks": "openspec/changes/lumieres-temporisees-2026-11-003/tasks.md",
+    "specs": [
+      "openspec/changes/lumieres-temporisees-2026-11-003/specs/light-timers-clients/spec.md"
+    ]
+  },
+  "implementation": {
+    "paths": [
+      "src/lights/lightTimers.ts",
+      "src/lights/useLightTimers.ts",
+      "src/components/Lighting/LightTimerControl.tsx",
+      "src/components/Lighting/LightTimerPanel.tsx",
+      "src/pages/LightTimersPage.tsx",
+      "src/pages/LightingPage.tsx",
+      "src/components/Navigation/SidebarMenu.tsx",
+      "src/services/legacyApi.ts",
+      "src/mockFetch.ts",
+      "src/App.tsx"
+    ],
+    "primary_surface": "react-user"
+  },
+  "userguide": {
+    "pages": [
+      "docs/features/light-timers.md"
+    ],
+    "language": "fr",
+    "i18n_keys": [],
+    "screenshots": []
+  },
+  "tests": {
+    "playwright": [
+      "e2e/tests/light-timers.spec.ts",
+      "e2e/tests/light-timers-logic.spec.ts"
+    ],
+    "pytest": [],
+    "testthat": [],
+    "coverage_must_test": [
+      "liste des six lumieres avec inconnue",
+      "Dressing identique menu et fiche",
+      "valeur libre 7 envoie PUT minutes 7",
+      "valeurs 300 et 0 refusees sans requete",
+      "masque pour lan_user quand l IAM est actif",
+      "controles desactives hors ligne"
+    ],
+    "smoke_tags": [
+      "@nr"
+    ],
+    "ux_matrix": {
+      "required": true,
+      "devices": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "targets": [
+        "local"
+      ],
+      "required_projects": [
+        "local-desktop",
+        "local-iphone",
+        "local-ipad"
+      ],
+      "screenshots_required": true,
+      "visual_regression_required": true,
+      "no_armoire_required": true,
+      "notes": "Pages Temporisations et Éclairage du portail local, build démo servi en local (ESSENSYS_LOCAL_URL) ; fixture no-armoire et enregistrement des fetch, aucune requête armoire."
+    },
+    "ux_evidence": {
+      "playwright_report": null,
+      "screenshots": [],
+      "last_run_at": "2026-11-07",
+      "devices_validated": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "status": "not-run",
+      "reviewer": null,
+      "notes": "local-desktop, local-iphone, local-ipad ; local-android en fixme (débordement horizontal de la mise en page mobile, antérieur à la feature). Pas de capture de référence : à produire au /checkup."
+    }
+  },
+  "release": {
+    "changelog_entry": "Portail local : réglage des temporisations des lumières (menu Temporisations et panneau de la page Éclairage) (#10).",
+    "target_tag": null,
+    "surfaces": [
+      "react-user",
+      "server-frontend"
+    ],
+    "paths": []
+  },
+  "security": {
+    "sca_tool": "dependabot",
+    "dependabot_alerts_url": null,
+    "last_scan_at": null,
+    "cve_findings": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "secret_scan": {
+      "status": "clean",
+      "tool": "gitleaks",
+      "last_scan_at": null
+    },
+    "muted_findings": [],
+    "threat_model_url": null,
+    "owner_security": "hermes"
+  },
+  "github": {
+    "issue": "essensys-hub/essensys-feature-lifecycle#45",
+    "project_item": "PVTI_lADODqt0Wc4BavHTzhGsSFY"
+  }
+}
