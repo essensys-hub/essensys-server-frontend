@@ -4,6 +4,10 @@ import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 import { sendInjection } from '../services/legacyApi';
 import { useTestMode } from '../context/TestModeContext';
 import { useLastAction } from '../hooks';
+import { useArmoireSnapshot } from '../hooks/useArmoireSnapshot';
+import { LightTimerPanel } from '../components/Lighting/LightTimerPanel';
+import { useCanAdminLightTimers } from '../lights/useLightTimers';
+import { isLightTimerId } from '../lights/lightTimers';
 
 interface Light {
   id: string;
@@ -59,6 +63,8 @@ export const LightingPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const { enabled: testMode } = useTestMode();
   const { lastAction, polling, refetch } = useLastAction();
+  const { snapshot } = useArmoireSnapshot();
+  const canAdminTimers = useCanAdminLightTimers();
   const armoireBusy = lastAction != null && !lastAction.isDone;
 
   const handleLightAction = async (light: Light, action: 'on' | 'off') => {
@@ -138,10 +144,8 @@ export const LightingPage: React.FC = () => {
       {/* Individual Controls */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {lights.map((light) => (
-          <div
-            key={light.id}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-          >
+          <div key={light.id} className="p-3 bg-gray-50 rounded-lg" data-testid={`light-${light.id}`}>
+          <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-700">{light.name}</span>
             <div className="flex gap-2">
               <ActionButton
@@ -161,6 +165,10 @@ export const LightingPage: React.FC = () => {
                 size="sm"
               />
             </div>
+          </div>
+          {canAdminTimers && isLightTimerId(light.id) && (
+            <LightTimerPanel id={light.id} online={snapshot?.connected ?? false} dryRun={testMode} />
+          )}
           </div>
         ))}
       </div>

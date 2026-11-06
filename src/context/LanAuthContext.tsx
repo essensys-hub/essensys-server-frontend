@@ -35,6 +35,9 @@ export function LanAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<LanUser | null>(null);
   const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
+  // Vrai après la première lecture de session : évite de rediriger vers /login pendant le rendu
+  // qui suit la résolution asynchrone du mode IAM (/health), avant que refresh() n'ait démarré.
+  const [attempted, setAttempted] = useState(false);
 
   const refresh = useCallback(async () => {
     if (!enabled) {
@@ -75,6 +78,7 @@ export function LanAuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
     } finally {
       setLoading(false);
+      setAttempted(true);
     }
   }, [enabled]);
 
@@ -108,14 +112,14 @@ export function LanAuthProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       user,
-      loading: modeLoading || loading,
+      loading: modeLoading || loading || (enabled && !attempted),
       error,
       login,
       logout,
       refresh,
       enabled,
     }),
-    [user, modeLoading, loading, error, login, logout, refresh, enabled],
+    [user, modeLoading, loading, enabled, attempted, error, login, logout, refresh],
   );
 
   return <LanAuthContext.Provider value={value}>{children}</LanAuthContext.Provider>;

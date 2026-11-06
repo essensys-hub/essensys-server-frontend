@@ -2,6 +2,33 @@ import { handleMockScenarioRequest } from './mockScenarios';
 
 const originalFetch = window.fetch;
 
+const DEMO_LIGHT_TIMERS = [
+    { id: 'dressing', label: 'Dressing', key: 521 },
+    { id: 'wc1', label: 'WC 1', key: 555 },
+    { id: 'wc2', label: 'WC 2', key: 556 },
+    { id: 'pieceserv', label: 'Service', key: 557 },
+    { id: 'ann1', label: 'Annexe 1', key: 561 },
+    { id: 'ann2', label: 'Annexe 2', key: 562 },
+];
+const demoLightTimers: Record<string, number | null> = {
+    dressing: 15, wc1: null, wc2: 0, pieceserv: 60, ann1: null, ann2: 7,
+};
+
+/** Rôle LAN de la session de démonstration : lan_admin sur /settings/users, ou si sessionStorage
+ *  `essensys_demo_lan_role` le demande (tests) ; lan_user sinon. */
+function demoForcedLanRole(): 'lan_admin' | 'lan_user' | null {
+    try {
+        const forced = sessionStorage.getItem('essensys_demo_lan_role');
+        return forced === 'lan_admin' || forced === 'lan_user' ? forced : null;
+    } catch {
+        return null;
+    }
+}
+
+function demoLanRole(): 'lan_admin' | 'lan_user' {
+    return demoForcedLanRole() ?? (window.location.pathname.includes('/settings/users') ? 'lan_admin' : 'lan_user');
+}
+
 export function setupMocks() {
     console.log('[MOCK] 🚀 Mocks enabled for static demo mode');
 
@@ -55,6 +82,27 @@ export function setupMocks() {
                 });
             }
             return jsonResponse({ success: true, message: 'Mock injected' });
+        }
+
+        // Temporisations des lumières (lumieres-temporisees-2026-11-003). Valeurs de démonstration en mémoire ;
+        // WC 1 et Annexe 1 jamais lues (null), pour montrer « inconnue ». Réservé à lan_admin (403 sinon).
+        if (url.includes('/api/admin/lights/timers')) {
+            // IAM LAN désactivé (cas de la démo par défaut) : tout le monde administre ; lan_user forcé : 403.
+            if (demoForcedLanRole() === 'lan_user') return jsonResponse({ error: 'forbidden' }, 403);
+            if (method === 'GET') {
+                return jsonResponse({ timers: DEMO_LIGHT_TIMERS.map((t) => ({ ...t, minutes: demoLightTimers[t.id] })) });
+            }
+            if (method === 'PUT') {
+                const id = decodeURIComponent(new URL(url, window.location.origin).pathname.split('/').pop() ?? '');
+                const body = init?.body ? JSON.parse(String(init.body)) : {};
+                if (!DEMO_LIGHT_TIMERS.some((t) => t.id === id)) return jsonResponse({ error: 'unknown_light' }, 400);
+                if (!Number.isInteger(body.minutes) || body.minutes < 0 || body.minutes > 255) {
+                    return jsonResponse({ error: 'invalid_minutes' }, 400);
+                }
+                if (url.includes('test_mode=dry_run')) return jsonResponse({ id, minutes: body.minutes, status: 'dry_run' });
+                demoLightTimers[id] = body.minutes;
+                return jsonResponse({ id, minutes: body.minutes, status: 'queued' });
+            }
         }
 
         if (url.includes('/api/admin/exchange') && method === 'GET') {
@@ -138,7 +186,7 @@ export function setupMocks() {
         }
 
         if (url.includes('/api/user/me') && method === 'GET') {
-            const wantsAdmin = window.location.pathname.includes('/settings/users');
+            const wantsAdmin = demoLanRole() === 'lan_admin';
             return jsonResponse({
                 user: {
                     id: wantsAdmin ? 1 : 2,

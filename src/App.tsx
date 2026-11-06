@@ -6,6 +6,7 @@ import {
   SecurityPage,
   HeatingPage,
   LightingPage,
+  LightTimersPage,
   ShuttersPage,
   WaterHeaterPage,
   SprinklerPage,
@@ -48,6 +49,7 @@ function App() {
                 <Route path="/security" element={<SecurityPage />} />
                 <Route path="/heating" element={<HeatingPage />} />
                 <Route path="/lighting" element={<LightingPage />} />
+                <Route path="/lighting/timers" element={<LightTimersPage />} />
                 <Route path="/scenarios" element={<ScenariosPage />} />
                 <Route path="/shutters" element={<ShuttersPage />} />
                 <Route path="/water-heater" element={<WaterHeaterPage />} />
