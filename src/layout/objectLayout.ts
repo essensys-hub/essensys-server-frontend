@@ -79,6 +79,17 @@ export const layoutItems = <T extends { id: string }>(kind: LayoutKind, items: R
     .sort((a, b) => rank.get(a.id)! - rank.get(b.id)!);
 };
 
+/** Vrai si l'ordre effectif est celui du catalogue d'origine (désactiver seul ne change pas l'ordre). */
+export const isCatalogueOrder = (kind: LayoutKind, layout: ObjectLayout): boolean =>
+  effectiveLayout(kind, layout).ordered.every((id, i) => id === CATALOGUES[kind][i].id);
+
+/** Écran sans groupe à catalogue propre (Temporisations) : ordre propre tant que l'ordre n'est pas personnalisé, sinon ordre global ; toujours filtré. */
+export const layoutItemsOwnOrder = <T extends { id: string }>(kind: LayoutKind, items: ReadonlyArray<T>, layout: ObjectLayout): T[] => {
+  if (!isCatalogueOrder(kind, layout)) return layoutItems(kind, items, layout);
+  const off = effectiveLayout(kind, layout).disabled;
+  return items.filter((it) => !off.includes(it.id));
+};
+
 /** Monte ou descend un élément : échange avec son voisin du même groupe dans l'ordre global. */
 export const moveInGroup = (kind: LayoutKind, ordered: ReadonlyArray<string>, id: string, dir: 'up' | 'down'): string[] => {
   const next = [...ordered];

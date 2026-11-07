@@ -276,4 +276,35 @@ test.describe('disposition des lumières et des volets — portail local', () =>
     expect(lights.every((l: { name: string | null }) => l.name === null)).toBe(true);
     expect(shutters.every((s: { name: string | null }) => s.name === null)).toBe(true);
   });
+
+  test('@nr NR-server-frontend-10 Temporisations : ordre propre par défaut, désactivation seule, réordonnancement puis reset', async ({ page }) => {
+    const order = async () =>
+      page.getByTestId(/^light-timers-item-/).evaluateAll((els) => els.map((e) => e.getAttribute('data-testid')!.slice(18)));
+    const catalogue = [
+      'terrasse', 'entree', 'escalier', 'deg1', 'deg2', 'pieceserv', 'ann1', 'ann2', 'salon', 'sam', 'cuisine', 'sdb1', 'sdb2',
+      'wc1', 'wc2', 'bureau', 'gdchamb', 'ptchamb1', 'ptchamb2', 'ptchamb3', 'dressing',
+    ];
+    // Désactivation seule, order complet envoyé : ordre propre.
+    await initLayout(page, { lights: { order: catalogue, disabled: ['wc1'], version: 1 } });
+    await page.goto('lighting/timers', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('light-timers-item-dressing')).toBeVisible();
+    expect(await order()).toEqual(['dressing', 'wc2', 'pieceserv', 'ann1', 'ann2']);
+  });
+
+  test('@nr NR-server-frontend-10 Temporisations : réordonnancement => ordre global, reset => ordre propre', async ({ page }) => {
+    const order = async () =>
+      page.getByTestId(/^light-timers-item-/).evaluateAll((els) => els.map((e) => e.getAttribute('data-testid')!.slice(18)));
+    await initLayout(page, { lights: { order: ['ann2', 'wc1'], version: 2 } });
+    await page.goto('lighting/timers', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('light-timers-item-dressing')).toBeVisible();
+    expect(await order()).toEqual(['ann2', 'wc1', 'pieceserv', 'ann1', 'wc2', 'dressing']);
+  });
+
+  test('@nr NR-server-frontend-10 Temporisations : document remis à zéro => ordre propre', async ({ page }) => {
+    await initLayout(page, { lights: { order: [], disabled: [], version: 4 } });
+    await page.goto('lighting/timers', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('light-timers-item-dressing')).toBeVisible();
+    const ids = await page.getByTestId(/^light-timers-item-/).evaluateAll((els) => els.map((e) => e.getAttribute('data-testid')!.slice(18)));
+    expect(ids).toEqual(['dressing', 'wc1', 'wc2', 'pieceserv', 'ann1', 'ann2']);
+  });
 });

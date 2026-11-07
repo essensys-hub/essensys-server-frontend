@@ -5,7 +5,7 @@
  */
 import { test, expect } from '@playwright/test';
 import {
-  CATALOGUES, DEFAULT_LAYOUT, buildWrite, effectiveLayout, groupOf, layoutItems, moveInGroup, parseLayout,
+  CATALOGUES, DEFAULT_LAYOUT, buildWrite, effectiveLayout, layoutItemsOwnOrder, groupOf, layoutItems, moveInGroup, parseLayout,
 } from '../../src/layout/objectLayout';
 import { LIGHT_NAME_CATALOG } from '../../src/lights/lightNames';
 import { SHUTTER_NAME_CATALOG } from '../../src/shutters/shutterNames';
@@ -88,5 +88,19 @@ test.describe('logique de la disposition des objets', () => {
       .toEqual({ order: ['a'], disabled: ['b'], version: 2, updated_at: '2026-11-07T10:15:30.123Z' });
     expect(parseLayout(null)).toEqual(DEFAULT_LAYOUT);
     expect(parseLayout({ order: 'x', disabled: [1, 'a'] })).toEqual({ ...DEFAULT_LAYOUT, disabled: ['a'] });
+  });
+
+  test('@nr NR-server-frontend-10 Temporisations : ordre propre tant que l ordre n est pas personnalisé', () => {
+    const own = ['dressing', 'wc1', 'wc2', 'pieceserv', 'ann1', 'ann2'];
+    const ids = (l: ReturnType<typeof layout>) => layoutItemsOwnOrder('lights', own.map((id) => ({ id })), l).map((i) => i.id);
+    expect(ids(DEFAULT_LAYOUT)).toEqual(own);
+    // order complet envoyé par un client qui a seulement désactivé un objet : ordre propre, filtré
+    expect(ids(layout(lights, ['wc1']))).toEqual(['dressing', 'wc2', 'pieceserv', 'ann1', 'ann2']);
+    // réordonnancement : ordre global filtré
+    const moved = ['dressing', ...lights.filter((id) => id !== 'dressing')];
+    expect(ids(layout(moved, []))).toEqual(['dressing', 'pieceserv', 'ann1', 'ann2', 'wc1', 'wc2']);
+    expect(ids(layout(moved, ['ann1']))).toEqual(['dressing', 'pieceserv', 'ann2', 'wc1', 'wc2']);
+    // reset (document remis à zéro) : retour à l ordre propre
+    expect(ids({ ...DEFAULT_LAYOUT, version: 4 })).toEqual(own);
   });
 });
