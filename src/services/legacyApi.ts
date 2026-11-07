@@ -59,6 +59,7 @@ import { pollHeatingSync } from '../heating/scheduleSync';
 import { formatTestVerdict, isTestModeEnabled, testModeHeaders, withTestModeQuery, type DryRunResponse } from '../testMode';
 import { parseInjectionResult } from '../injectionResult';
 import { isLightId, type LightNameValue, type LightNameWriteStatus } from '../lights/lightNames';
+import { parseLayout, type LayoutKind, type LayoutWriteStatus, type ObjectLayout } from '../layout/objectLayout';
 import { isShutterId, type ShutterNameValue, type ShutterNameWriteStatus } from '../shutters/shutterNames';
 import { isLightTimerId, isValidMinutes, type LightTimerValue, type LightTimerWriteStatus } from '../lights/lightTimers';
 
@@ -695,4 +696,48 @@ export const setShutterName = async (
   const data = await response.json() as ShutterNameValue & { status?: string };
   const { status, ...shutter } = data;
   return { shutter, status: status === 'dry_run' ? 'dry_run' : 'saved' };
+};
+
+/** Disposition (objets désactivés et ordre) des lumières ou des volets : GET /api/{lights|shutters}/layout. */
+export const getObjectLayout = async (kind: LayoutKind): Promise<ObjectLayout> => {
+  const response = await fetch(`${adminApiBase()}/api/${kind}/layout`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  handleAuthError(response);
+  if (!response.ok) {
+    throw new Error(`Lecture de la disposition impossible (${response.status})`);
+  }
+  return parseLayout(await response.json());
+};
+
+/** Enregistre la disposition : PUT {"order","disabled"} ou {"reset":true}. N'écrit rien dans l'armoire. */
+export const setObjectLayout = async (
+  kind: LayoutKind,
+  body: { order: string[]; disabled: string[] } | { reset: true },
+): Promise<{ layout: ObjectLayout; status: LayoutWriteStatus }> => {
+  const url = withTestModeQuery(`${adminApiBase()}/api/admin/${kind}/layout`);
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: testModeHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(body),
+  });
+  handleAuthError(response);
+  if (!response.ok) {
+    const data = await response.json().catch(() => null) as { error?: string } | null;
+    if (response.status === 403) throw new Error("Réservé à l'administrateur de l'armoire");
+    if (response.status === 503 || data?.error === 'names_unavailable') {
+      throw new Error('Stockage indisponible sur la passerelle, réessayez plus tard');
+    }
+    if (response.status === 400) {
+      throw new Error(
+        data?.error === 'unknown_light' ? 'Lumière inconnue du serveur'
+          : data?.error === 'unknown_shutter' ? 'Volet inconnu du serveur'
+            : 'Disposition refusée par le serveur',
+      );
+    }
+    throw new Error(`Enregistrement impossible (${response.status})`);
+  }
+  const data = await response.json() as Record<string, unknown>;
+  return { layout: parseLayout(data), status: data.status === 'dry_run' ? 'dry_run' : 'saved' };
 };

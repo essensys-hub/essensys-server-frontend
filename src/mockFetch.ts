@@ -1,6 +1,7 @@
 import { handleMockScenarioRequest } from './mockScenarios';
 import { LIGHT_NAME_CATALOG, MAX_NAME_LENGTH } from './lights/lightNames';
 import { SHUTTER_NAME_CATALOG } from './shutters/shutterNames';
+import { CATALOGUES, type LayoutKind } from './layout/objectLayout';
 
 const originalFetch = window.fetch;
 
@@ -38,6 +39,16 @@ const demoShutterNamesList = () =>
         version: demoShutterVersions[id] ?? 0,
         updated_at: demoShutterNames[id]?.updated_at ?? null,
     }));
+
+/** Disposition des lumières et des volets (affichage-objets-2026-11-006), en mémoire : n'écrit rien dans l'armoire. */
+const demoLayouts: Record<LayoutKind, { order: string[]; disabled: string[]; version: number; updated_at: string | null }> = {
+    lights: { order: [], disabled: [], version: 0, updated_at: null },
+    shutters: { order: [], disabled: [], version: 0, updated_at: null },
+};
+const demoStringList = (v: unknown, known: Set<string>): string[] | null => {
+    if (!Array.isArray(v) || v.some((x) => typeof x !== 'string') || new Set(v).size !== v.length) return null;
+    return (v as string[]).every((x) => known.has(x)) ? (v as string[]) : [];
+};
 
 /** Rôle LAN de la session de démonstration : lan_admin sur /settings/users, ou si sessionStorage
  *  `essensys_demo_lan_role` le demande (tests) ; lan_user sinon. */
@@ -190,6 +201,56 @@ export function setupMocks() {
             demoShutterNames[id] = name ? { name, version: entry.version + 1, updated_at } : undefined;
             if (!name) return jsonResponse({ ...entry, name: null, version: entry.version + 1, updated_at, status: 'saved' });
             return jsonResponse({ ...demoShutterNamesList().find((s) => s.id === id)!, status: 'saved' });
+        }
+
+        // Disposition : lecture pour tous, écriture réservée à lan_admin (403 pour lan_user forcé).
+        // Tests : sessionStorage `essensys_demo_layout_read` = 404 ou 500 force l'échec de la lecture ;
+        // `essensys_demo_layout_error` = 403 ou 503 force l'erreur de l'écriture ; `essensys_demo_layout_init` = JSON {kind: document}.
+        const layoutMatch = new URL(url, window.location.origin).pathname.match(/^\/api\/(admin\/)?(lights|shutters)\/layout$/);
+        if (layoutMatch) {
+            const kind = layoutMatch[2] as LayoutKind;
+            const state = demoLayouts[kind];
+            try {
+                const init0 = sessionStorage.getItem('essensys_demo_layout_init');
+                if (init0 && state.version === 0) Object.assign(state, JSON.parse(init0)[kind] ?? {});
+            } catch { /* sessionStorage indisponible */ }
+            const publicDoc = () => ({ order: state.order, disabled: state.disabled, version: state.version, updated_at: state.updated_at });
+            if (method === 'GET' && !layoutMatch[1]) {
+                try {
+                    const forced = sessionStorage.getItem('essensys_demo_layout_read');
+                    if (forced === '404') return jsonResponse({ error: 'not_found' }, 404);
+                    if (forced === '500') return jsonResponse({ error: 'internal' }, 500);
+                } catch { /* sessionStorage indisponible */ }
+                return jsonResponse(publicDoc());
+            }
+            if (method === 'PUT' && layoutMatch[1]) {
+                if (demoForcedLanRole() === 'lan_user') return jsonResponse({ error: 'forbidden' }, 403);
+                try {
+                    const forced = sessionStorage.getItem('essensys_demo_layout_error');
+                    if (forced === '403') return jsonResponse({ error: 'forbidden' }, 403);
+                    if (forced === '503') return jsonResponse({ error: 'names_unavailable' }, 503);
+                } catch { /* sessionStorage indisponible */ }
+                const body = init?.body ? JSON.parse(String(init.body)) : {};
+                const known = new Set(CATALOGUES[kind].map((c) => c.id));
+                const unknownError = kind === 'lights' ? 'unknown_light' : 'unknown_shutter';
+                let next: { order: string[]; disabled: string[] };
+                if (body.reset === true) {
+                    next = { order: [], disabled: [] };
+                } else {
+                    const order = demoStringList(body.order, known);
+                    const disabled = demoStringList(body.disabled, known);
+                    if (order === null || disabled === null) return jsonResponse({ error: 'invalid_layout' }, 400);
+                    const given = [...(body.order as string[]), ...(body.disabled as string[])];
+                    if (given.some((id) => !known.has(id))) return jsonResponse({ error: unknownError }, 400);
+                    next = { order, disabled };
+                }
+                const updated_at = new Date().toISOString();
+                if (url.includes('test_mode=dry_run') || new Headers(init?.headers).get('X-Essensys-Test-Mode') === 'dry-run') {
+                    return jsonResponse({ ...next, version: state.version, updated_at: state.updated_at, status: 'dry_run' });
+                }
+                Object.assign(state, next, { version: state.version + 1, updated_at });
+                return jsonResponse({ ...publicDoc(), status: 'saved' });
+            }
         }
 
         if (url.includes('/api/admin/exchange') && method === 'GET') {

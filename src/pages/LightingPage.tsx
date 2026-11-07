@@ -10,6 +10,9 @@ import { useCanAdminLightTimers } from '../lights/useLightTimers';
 import { LightNameEditor } from '../components/Lighting/LightNameEditor';
 import { useLightNames } from '../lights/useLightNames';
 import { isLightTimerId } from '../lights/lightTimers';
+import { ObjectLayoutManager } from '../components/Layout/ObjectLayoutManager';
+import { layoutItems } from '../layout/objectLayout';
+import { useObjectLayout } from '../layout/useObjectLayout';
 
 interface Light {
   id: string;
@@ -68,6 +71,7 @@ export const LightingPage: React.FC = () => {
   const { snapshot } = useArmoireSnapshot();
   const canAdminTimers = useCanAdminLightTimers();
   const { nameOf } = useLightNames();
+  const { layout } = useObjectLayout('lights');
   const armoireBusy = lastAction != null && !lastAction.isDone;
 
   const handleLightAction = async (light: Light, action: 'on' | 'off') => {
@@ -122,7 +126,13 @@ export const LightingPage: React.FC = () => {
     }
   };
 
-  const renderLightControls = (lights: Light[], groupName: string) => (
+  const renderLightControls = (all: Light[], groupName: string) => {
+    // Une seule liste filtrée et ordonnée alimente les boutons de groupe et les lignes.
+    const lights = layoutItems('lights', all, layout);
+    if (lights.length === 0) {
+      return <p className="text-sm text-gray-500" data-testid={`light-group-empty-${groupName}`}>Aucune lumière activée</p>;
+    }
+    return (
     <div className="space-y-4">
       {/* Group Actions */}
       <div className="flex gap-2 pb-4 border-b border-gray-100">
@@ -177,7 +187,8 @@ export const LightingPage: React.FC = () => {
         ))}
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div>
@@ -221,6 +232,8 @@ export const LightingPage: React.FC = () => {
           Mode test actif — les boutons ci-dessous ne commandent pas l&apos;armoire. Désactivez dans Paramètres pour un contrôle réel.
         </div>
       )}
+
+      {canAdminTimers && <ObjectLayoutManager kind="lights" nameOf={(id) => nameOf(id)} />}
 
       <div className="space-y-6">
         <ControlCard title="Éclairages principaux" description="Lumières principales de la maison">

@@ -7,6 +7,8 @@ import { useTestMode } from '../context/TestModeContext';
 import { useCanAdminLightTimers, useLightTimers } from '../lights/useLightTimers';
 import { useLightNames } from '../lights/useLightNames';
 import { LIGHT_TIMERS, formatMinutes } from '../lights/lightTimers';
+import { layoutItemsOwnOrder } from '../layout/objectLayout';
+import { useObjectLayout } from '../layout/useObjectLayout';
 
 export const LightTimersPage: React.FC = () => {
   const canAdmin = useCanAdminLightTimers();
@@ -14,6 +16,7 @@ export const LightTimersPage: React.FC = () => {
   const { enabled: testMode } = useTestMode();
   const { timers, loading, error, refresh } = useLightTimers();
   const { nameOf } = useLightNames();
+  const { layout } = useObjectLayout('lights');
 
   const readOne = useCallback(
     (id: string) => async () => (await refresh()).find((t) => t.id === id)?.minutes ?? null,
@@ -46,7 +49,7 @@ export const LightTimersPage: React.FC = () => {
             <p className="text-sm text-gray-500">Lecture des temporisations…</p>
           ) : (
             <ul className="space-y-4" data-testid="light-timers-list">
-              {LIGHT_TIMERS.map((entry) => {
+              {layoutItemsOwnOrder('lights', LIGHT_TIMERS, layout).map((entry) => {
                 const minutes = timers.find((t) => t.id === entry.id)?.minutes ?? null;
                 return (
                   <li key={entry.id} data-testid={`light-timers-item-${entry.id}`}>

@@ -1,0 +1,134 @@
+{
+  "$schema": "./schema/feature.schema.json",
+  "id": "affichage-objets-2026-11-006",
+  "title": "Activer, désactiver et ordonner les lumières et les volets sur le portail local",
+  "status": "proposed",
+  "owner": "hermes",
+  "git": {
+    "branch": "feat/affichage-objets-2026-11-006",
+    "pr_url": null
+  },
+  "openspec": {
+    "change_id": "affichage-objets-2026-11-006",
+    "path": "openspec/changes/affichage-objets-2026-11-006",
+    "proposal": "openspec/changes/affichage-objets-2026-11-006/proposal.md",
+    "design": "openspec/changes/affichage-objets-2026-11-006/design.md",
+    "tasks": "openspec/changes/affichage-objets-2026-11-006/tasks.md",
+    "specs": [
+      "openspec/changes/affichage-objets-2026-11-006/specs/object-layout-clients/spec.md"
+    ]
+  },
+  "implementation": {
+    "paths": [
+      "src/layout/objectLayout.ts",
+      "src/layout/useObjectLayout.ts",
+      "src/components/Layout/ObjectLayoutManager.tsx",
+      "src/pages/LightingPage.tsx",
+      "src/pages/ShuttersPage.tsx",
+      "src/pages/LightTimersPage.tsx",
+      "src/services/legacyApi.ts",
+      "src/mockFetch.ts"
+    ],
+    "primary_surface": "react-user"
+  },
+  "userguide": {
+    "pages": [
+      "docs/features/object-layout.md"
+    ],
+    "language": "fr",
+    "i18n_keys": [],
+    "screenshots": []
+  },
+  "tests": {
+    "playwright": [
+      "e2e/tests/object-layout.spec.ts",
+      "e2e/tests/object-layout-logic.spec.ts"
+    ],
+    "pytest": [],
+    "testthat": [],
+    "coverage_must_test": [
+      "lumiere desactivee absente de la liste de Tout allumer et des Temporisations",
+      "volet desactive absent de la liste de Tout ouvrir et de Temps de course",
+      "ordre choisi applique dans le groupe",
+      "ordre incomplet et identifiant ancien",
+      "tout desactive texte Aucune lumiere activee",
+      "ancien serveur 404 catalogue complet",
+      "Monter et Descendre dans le groupe puis une seule ecriture",
+      "reactivation",
+      "Ordre d origine envoie reset",
+      "erreur 403 et 503 serveur",
+      "masque pour lan_user quand l IAM est actif",
+      "nom de 40 caracteres lisible dans l ecran de gestion",
+      "noms 41 et 52 inchanges",
+      "aucun ordre vers l armoire"
+    ],
+    "smoke_tags": [
+      "@nr"
+    ],
+    "ux_matrix": {
+      "required": true,
+      "devices": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "targets": [
+        "local"
+      ],
+      "required_projects": [
+        "local-desktop",
+        "local-iphone",
+        "local-ipad"
+      ],
+      "screenshots_required": true,
+      "visual_regression_required": true,
+      "no_armoire_required": true,
+      "notes": "Pages Éclairage et Volets & Stores du portail local, build démo servi en local (ESSENSYS_LOCAL_URL) ; fixture no-armoire et enregistrement des fetch, aucune requête armoire."
+    },
+    "ux_evidence": {
+      "playwright_report": null,
+      "screenshots": [],
+      "last_run_at": "2026-11-07",
+      "devices_validated": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "status": "not-run",
+      "reviewer": null,
+      "notes": "local-desktop, local-iphone, local-ipad ; local-android en fixme (débordement horizontal de la mise en page mobile, antérieur à la feature). Pas de capture de référence : à produire au /checkup."
+    }
+  },
+  "release": {
+    "changelog_entry": "Portail local : activation, désactivation et ordre d'affichage des lumières et des volets par l'administrateur (#16).",
+    "target_tag": null,
+    "surfaces": [
+      "react-user",
+      "server-frontend"
+    ],
+    "paths": []
+  },
+  "security": {
+    "sca_tool": "dependabot",
+    "dependabot_alerts_url": null,
+    "last_scan_at": null,
+    "cve_findings": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "secret_scan": {
+      "status": "clean",
+      "tool": "gitleaks",
+      "last_scan_at": null
+    },
+    "muted_findings": [],
+    "threat_model_url": null,
+    "owner_security": "hermes"
+  },
+  "github": {
+    "issue": "essensys-hub/essensys-feature-lifecycle#55",
+    "project_item": null
+  }
+}
