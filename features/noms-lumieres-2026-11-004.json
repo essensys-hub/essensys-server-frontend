@@ -1,0 +1,129 @@
+{
+  "$schema": "./schema/feature.schema.json",
+  "id": "noms-lumieres-2026-11-004",
+  "title": "Afficher et modifier le nom des lumières sur le portail local",
+  "status": "proposed",
+  "owner": "hermes",
+  "git": {
+    "branch": "feat/noms-lumieres-2026-11-004",
+    "pr_url": null
+  },
+  "openspec": {
+    "change_id": "noms-lumieres-2026-11-004",
+    "path": "openspec/changes/noms-lumieres-2026-11-004",
+    "proposal": "openspec/changes/noms-lumieres-2026-11-004/proposal.md",
+    "design": "openspec/changes/noms-lumieres-2026-11-004/design.md",
+    "tasks": "openspec/changes/noms-lumieres-2026-11-004/tasks.md",
+    "specs": [
+      "openspec/changes/noms-lumieres-2026-11-004/specs/light-names-clients/spec.md"
+    ]
+  },
+  "implementation": {
+    "paths": [
+      "src/lights/lightNames.ts",
+      "src/lights/useLightNames.ts",
+      "src/components/Lighting/LightNameEditor.tsx",
+      "src/components/Lighting/LightTimerControl.tsx",
+      "src/components/Dashboard/LightingControl.tsx",
+      "src/pages/LightTimersPage.tsx",
+      "src/pages/LightingPage.tsx",
+      "src/services/legacyApi.ts",
+      "src/mockFetch.ts"
+    ],
+    "primary_surface": "react-user"
+  },
+  "userguide": {
+    "pages": [
+      "docs/features/light-names.md"
+    ],
+    "language": "fr",
+    "i18n_keys": [],
+    "screenshots": []
+  },
+  "tests": {
+    "playwright": [
+      "e2e/tests/light-names.spec.ts",
+      "e2e/tests/light-names-logic.spec.ts"
+    ],
+    "pytest": [],
+    "testthat": [],
+    "coverage_must_test": [
+      "administrateur renomme Dressing en WC 3",
+      "Nom d origine envoie name null",
+      "nom vide ou 41 caracteres refuse sans requete",
+      "nom avec HTML affiche comme texte",
+      "erreur 403 serveur",
+      "erreur 503 serveur",
+      "masque pour lan_user quand l IAM est actif",
+      "lecture impossible noms d origine"
+    ],
+    "smoke_tags": [
+      "@nr"
+    ],
+    "ux_matrix": {
+      "required": true,
+      "devices": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "targets": [
+        "local"
+      ],
+      "required_projects": [
+        "local-desktop",
+        "local-iphone",
+        "local-ipad"
+      ],
+      "screenshots_required": true,
+      "visual_regression_required": true,
+      "no_armoire_required": true,
+      "notes": "Page Éclairage et écran Temporisations du portail local, build démo servi en local (ESSENSYS_LOCAL_URL) ; fixture no-armoire et enregistrement des fetch, aucune requête armoire."
+    },
+    "ux_evidence": {
+      "playwright_report": null,
+      "screenshots": [],
+      "last_run_at": "2026-11-07",
+      "devices_validated": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "status": "not-run",
+      "reviewer": null,
+      "notes": "local-desktop, local-iphone, local-ipad ; local-android en fixme (débordement horizontal de la mise en page mobile, antérieur à la feature). Pas de capture de référence : à produire au /checkup."
+    }
+  },
+  "release": {
+    "changelog_entry": "Portail local : nom personnalisé des lumières, affiché partout et modifiable par l'administrateur (#12).",
+    "target_tag": null,
+    "surfaces": [
+      "react-user",
+      "server-frontend"
+    ],
+    "paths": []
+  },
+  "security": {
+    "sca_tool": "dependabot",
+    "dependabot_alerts_url": null,
+    "last_scan_at": null,
+    "cve_findings": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "secret_scan": {
+      "status": "clean",
+      "tool": "gitleaks",
+      "last_scan_at": null
+    },
+    "muted_findings": [],
+    "threat_model_url": null,
+    "owner_security": "hermes"
+  },
+  "github": {
+    "issue": "essensys-hub/essensys-feature-lifecycle#41",
+    "project_item": "PVTI_lADODqt0Wc4BavHTzhGkOlI"
+  }
+}

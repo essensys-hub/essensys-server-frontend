@@ -7,6 +7,8 @@ import { useLastAction } from '../hooks';
 import { useArmoireSnapshot } from '../hooks/useArmoireSnapshot';
 import { LightTimerPanel } from '../components/Lighting/LightTimerPanel';
 import { useCanAdminLightTimers } from '../lights/useLightTimers';
+import { LightNameEditor } from '../components/Lighting/LightNameEditor';
+import { useLightNames } from '../lights/useLightNames';
 import { isLightTimerId } from '../lights/lightTimers';
 
 interface Light {
@@ -65,6 +67,7 @@ export const LightingPage: React.FC = () => {
   const { lastAction, polling, refetch } = useLastAction();
   const { snapshot } = useArmoireSnapshot();
   const canAdminTimers = useCanAdminLightTimers();
+  const { nameOf } = useLightNames();
   const armoireBusy = lastAction != null && !lastAction.isDone;
 
   const handleLightAction = async (light: Light, action: 'on' | 'off') => {
@@ -77,9 +80,9 @@ export const LightingPage: React.FC = () => {
       const index = action === 'on' ? light.onIndex : light.offIndex;
       const mode = await sendInjection(index, light.dvalue);
       if (mode === 'dry_run') {
-        setSuccess(`${light.name} : test OK (mode test — non envoyé à l'armoire)`);
+        setSuccess(`${nameOf(light.id, light.name)} : test OK (mode test — non envoyé à l'armoire)`);
       } else {
-        setSuccess(`${light.name} : commande envoyée — l'armoire exécute sous ~5 s`);
+        setSuccess(`${nameOf(light.id, light.name)} : commande envoyée — l'armoire exécute sous ~5 s`);
         void refetch();
       }
     } catch (e) {
@@ -146,7 +149,7 @@ export const LightingPage: React.FC = () => {
         {lights.map((light) => (
           <div key={light.id} className="p-3 bg-gray-50 rounded-lg" data-testid={`light-${light.id}`}>
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">{light.name}</span>
+            <span className="text-sm font-medium text-gray-700">{nameOf(light.id, light.name)}</span>
             <div className="flex gap-2">
               <ActionButton
                 label="Allumer"
@@ -166,6 +169,7 @@ export const LightingPage: React.FC = () => {
               />
             </div>
           </div>
+          {canAdminTimers && <LightNameEditor id={light.id} />}
           {canAdminTimers && isLightTimerId(light.id) && (
             <LightTimerPanel id={light.id} online={snapshot?.connected ?? false} dryRun={testMode} />
           )}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDashboard } from '../../context/DashboardContext';
+import { useLightNames } from '../../lights/useLightNames';
 import type { LegacyMapping } from '../../services/legacyApi';
 
 interface LightItem extends LegacyMapping {
@@ -47,6 +48,7 @@ export const indirectLights: LightItem[] = [
 
 export const LightingControl: React.FC = () => {
     const { state, setValue, setValues } = useDashboard();
+    const { nameOf } = useLightNames();
 
     // Check if any light in the group is modified
     const isMainModified = mainLights.some(item => state[item.name] !== undefined);
@@ -66,7 +68,7 @@ export const LightingControl: React.FC = () => {
             const val = (state[item.name] as string) || '';
             return (
                 <div className="clear large" key={item.name}>
-                    <label htmlFor={`${item.name}_1`}>{item.label}</label>
+                    <label htmlFor={`${item.name}_1`}>{nameOf(item.name, item.label)}</label>
                     <input
                         type="radio"
                         className="radiocol1 escpl"

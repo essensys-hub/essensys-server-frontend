@@ -58,6 +58,7 @@ import type { HeatingSyncStatus, ScheduleSyncEvent } from '../heating/scheduleSy
 import { pollHeatingSync } from '../heating/scheduleSync';
 import { formatTestVerdict, isTestModeEnabled, testModeHeaders, withTestModeQuery, type DryRunResponse } from '../testMode';
 import { parseInjectionResult } from '../injectionResult';
+import { isLightId, type LightNameValue, type LightNameWriteStatus } from '../lights/lightNames';
 import { isLightTimerId, isValidMinutes, type LightTimerValue, type LightTimerWriteStatus } from '../lights/lightTimers';
 
 export interface InjectionBatchResult {
@@ -599,4 +600,51 @@ export const setLightTimer = async (id: string, minutes: number): Promise<LightT
   }
   const data = await response.json().catch(() => null) as { status?: string } | null;
   return data?.status === 'dry_run' ? 'dry_run' : 'queued';
+};
+
+
+/** Noms personnalisés : lecture des 33 lumières (nom d'origine, nom personnalisé ou null). */
+export const getLightNames = async (): Promise<LightNameValue[]> => {
+  const response = await fetch(`${adminApiBase()}/api/lights/names`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  handleAuthError(response);
+  if (!response.ok) {
+    throw new Error(`Lecture des noms impossible (${response.status})`);
+  }
+  const data: { lights?: LightNameValue[] } = await response.json();
+  return data.lights ?? [];
+};
+
+/** Renomme une lumière : PUT {"name": "..."} ; name null = retour au nom d'origine. N'écrit rien dans l'armoire. */
+export const setLightName = async (
+  id: string,
+  name: string | null,
+): Promise<{ light: LightNameValue; status: LightNameWriteStatus }> => {
+  if (!isLightId(id)) throw new Error('Lumière inconnue');
+  const url = withTestModeQuery(`${adminApiBase()}/api/admin/lights/names/${id}`);
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: testModeHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ name }),
+  });
+  handleAuthError(response);
+  if (!response.ok) {
+    const data = await response.json().catch(() => null) as { error?: string } | null;
+    if (response.status === 403) throw new Error("Réservé à l'administrateur de l'armoire");
+    if (response.status === 503 || data?.error === 'names_unavailable') {
+      throw new Error('Stockage des noms indisponible sur la passerelle, réessayez plus tard');
+    }
+    if (response.status === 400) {
+      throw new Error(
+        data?.error === 'unknown_light' ? 'Lumière inconnue du serveur'
+          : 'Nom refusé par le serveur (1 à 40 caractères, sans < ni >)',
+      );
+    }
+    throw new Error(`Renommage impossible (${response.status})`);
+  }
+  const data = await response.json() as LightNameValue & { status?: string };
+  const { status, ...light } = data;
+  return { light, status: status === 'dry_run' ? 'dry_run' : 'saved' };
 };
