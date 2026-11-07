@@ -58,6 +58,7 @@ import type { HeatingSyncStatus, ScheduleSyncEvent } from '../heating/scheduleSy
 import { pollHeatingSync } from '../heating/scheduleSync';
 import { formatTestVerdict, isTestModeEnabled, testModeHeaders, withTestModeQuery, type DryRunResponse } from '../testMode';
 import { parseInjectionResult } from '../injectionResult';
+import { isLightTimerId, isValidMinutes, type LightTimerValue, type LightTimerWriteStatus } from '../lights/lightTimers';
 
 export interface InjectionBatchResult {
   totalParams: number;
@@ -559,3 +560,43 @@ export const sendAlarmAction = async (alarmState: string, code: string): Promise
     }
 };
 
+
+/** Temporisations des lumières : lecture des six valeurs (minutes null = jamais lue). */
+export const getLightTimers = async (): Promise<LightTimerValue[]> => {
+  const response = await fetch(`${adminApiBase()}/api/admin/lights/timers`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  handleAuthError(response);
+  if (!response.ok) {
+    throw new Error(`Lecture des temporisations impossible (${response.status})`);
+  }
+  const data: { timers?: LightTimerValue[] } = await response.json();
+  return data.timers ?? [];
+};
+
+/** Règle le délai d'une lumière : PUT {"minutes": n}. Mode test : validé, non exécuté (dry_run). */
+export const setLightTimer = async (id: string, minutes: number): Promise<LightTimerWriteStatus> => {
+  if (!isLightTimerId(id)) throw new Error('Lumière inconnue');
+  if (!isValidMinutes(minutes)) throw new Error('Valeur hors plage (0 à 255 minutes)');
+  const url = withTestModeQuery(`${adminApiBase()}/api/admin/lights/timers/${id}`);
+  const response = await fetch(url, {
+    method: 'PUT',
+    headers: testModeHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ minutes }),
+  });
+  handleAuthError(response);
+  if (response.status === 403) {
+    throw new Error('Réservé à l\'administrateur de l\'armoire');
+  }
+  if (!response.ok) {
+    const data = await response.json().catch(() => null) as { error?: string } | null;
+    throw new Error(
+      data?.error === 'invalid_minutes' ? 'Valeur refusée par le serveur (0 à 255 minutes)'
+        : data?.error === 'unknown_light' ? 'Lumière inconnue du serveur'
+        : `Réglage impossible (${response.status})`,
+    );
+  }
+  const data = await response.json().catch(() => null) as { status?: string } | null;
+  return data?.status === 'dry_run' ? 'dry_run' : 'queued';
+};

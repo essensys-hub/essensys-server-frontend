@@ -2,6 +2,7 @@ export { DashboardPage } from './DashboardPage';
 export { SecurityPage } from './SecurityPage';
 export { HeatingPage } from './HeatingPage';
 export { LightingPage } from './LightingPage';
+export { LightTimersPage } from './LightTimersPage';
 export { ShuttersPage } from './ShuttersPage';
 export { WaterHeaterPage } from './WaterHeaterPage';
 export { SprinklerPage } from './SprinklerPage';
