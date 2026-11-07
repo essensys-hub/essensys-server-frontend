@@ -1,0 +1,129 @@
+{
+  "$schema": "./schema/feature.schema.json",
+  "id": "noms-volets-2026-11-005",
+  "title": "Afficher et modifier le nom des volets et stores sur le portail local",
+  "status": "proposed",
+  "owner": "hermes",
+  "git": {
+    "branch": "feat/noms-volets-2026-11-005",
+    "pr_url": null
+  },
+  "openspec": {
+    "change_id": "noms-volets-2026-11-005",
+    "path": "openspec/changes/noms-volets-2026-11-005",
+    "proposal": "openspec/changes/noms-volets-2026-11-005/proposal.md",
+    "design": "openspec/changes/noms-volets-2026-11-005/design.md",
+    "tasks": "openspec/changes/noms-volets-2026-11-005/tasks.md",
+    "specs": [
+      "openspec/changes/noms-volets-2026-11-005/specs/shutter-names-clients/spec.md"
+    ]
+  },
+  "implementation": {
+    "paths": [
+      "src/shutters/shutterNames.ts",
+      "src/shutters/useShutterNames.ts",
+      "src/components/Shutters/ShutterNameEditor.tsx",
+      "src/pages/ShuttersPage.tsx",
+      "src/services/legacyApi.ts",
+      "src/mockFetch.ts"
+    ],
+    "primary_surface": "react-user"
+  },
+  "userguide": {
+    "pages": [
+      "docs/features/shutter-names.md"
+    ],
+    "language": "fr",
+    "i18n_keys": [],
+    "screenshots": []
+  },
+  "tests": {
+    "playwright": [
+      "e2e/tests/shutter-names.spec.ts",
+      "e2e/tests/shutter-names-logic.spec.ts"
+    ],
+    "pytest": [],
+    "testthat": [],
+    "coverage_must_test": [
+      "administrateur renomme Volet 1 Salon en Volet baie vitree",
+      "Nom d origine envoie name null",
+      "nom vide ou 41 caracteres refuse sans requete",
+      "Store nord et a&b affiches comme texte",
+      "nom de 40 caracteres lisible",
+      "erreur 403 serveur",
+      "erreur 503 serveur",
+      "masque pour lan_user quand l IAM est actif",
+      "lecture impossible noms d origine",
+      "noms des lumieres inchanges",
+      "aucun ordre vers l armoire"
+    ],
+    "smoke_tags": [
+      "@nr"
+    ],
+    "ux_matrix": {
+      "required": true,
+      "devices": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "targets": [
+        "local"
+      ],
+      "required_projects": [
+        "local-desktop",
+        "local-iphone",
+        "local-ipad"
+      ],
+      "screenshots_required": true,
+      "visual_regression_required": true,
+      "no_armoire_required": true,
+      "notes": "Page Volets & Stores du portail local, build démo servi en local (ESSENSYS_LOCAL_URL) ; fixture no-armoire et enregistrement des fetch, aucune requête armoire."
+    },
+    "ux_evidence": {
+      "playwright_report": null,
+      "screenshots": [],
+      "last_run_at": "2026-11-07",
+      "devices_validated": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "status": "not-run",
+      "reviewer": null,
+      "notes": "local-desktop, local-iphone, local-ipad ; local-android en fixme (débordement horizontal de la mise en page mobile, antérieur à la feature). Pas de capture de référence : à produire au /checkup."
+    }
+  },
+  "release": {
+    "changelog_entry": "Portail local : nom personnalisé des volets et stores, affiché partout et modifiable par l'administrateur (#14).",
+    "target_tag": null,
+    "surfaces": [
+      "react-user",
+      "server-frontend"
+    ],
+    "paths": []
+  },
+  "security": {
+    "sca_tool": "dependabot",
+    "dependabot_alerts_url": null,
+    "last_scan_at": null,
+    "cve_findings": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "secret_scan": {
+      "status": "clean",
+      "tool": "gitleaks",
+      "last_scan_at": null
+    },
+    "muted_findings": [],
+    "threat_model_url": null,
+    "owner_security": "hermes"
+  },
+  "github": {
+    "issue": "essensys-hub/essensys-feature-lifecycle#52",
+    "project_item": null
+  }
+}

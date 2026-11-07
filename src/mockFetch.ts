@@ -1,5 +1,6 @@
 import { handleMockScenarioRequest } from './mockScenarios';
 import { LIGHT_NAME_CATALOG, MAX_NAME_LENGTH } from './lights/lightNames';
+import { SHUTTER_NAME_CATALOG } from './shutters/shutterNames';
 
 const originalFetch = window.fetch;
 
@@ -24,6 +25,18 @@ const demoLightNamesList = () =>
         name: demoLightNames[id]?.name ?? null,
         version: demoLightNames[id]?.version ?? 0,
         updated_at: demoLightNames[id]?.updated_at ?? null,
+    }));
+
+/** Noms personnalisés des volets (noms-volets-2026-11-005), en mémoire : renommer ne touche pas l'armoire. */
+const demoShutterNames: Record<string, { name: string; version: number; updated_at: string } | undefined> = {};
+const demoShutterVersions: Record<string, number> = {};
+const demoShutterNamesList = () =>
+    SHUTTER_NAME_CATALOG.map(([id, def]) => ({
+        id,
+        default: def,
+        name: demoShutterNames[id]?.name ?? null,
+        version: demoShutterVersions[id] ?? 0,
+        updated_at: demoShutterNames[id]?.updated_at ?? null,
     }));
 
 /** Rôle LAN de la session de démonstration : lan_admin sur /settings/users, ou si sessionStorage
@@ -147,6 +160,36 @@ export function setupMocks() {
                 return jsonResponse({ ...entry, name: null, version: entry.version + 1, updated_at, status: 'saved' });
             }
             return jsonResponse({ ...demoLightNamesList().find((l) => l.id === id)!, status: 'saved' });
+        }
+
+        // Noms des volets : lecture pour tous, écriture réservée à lan_admin (403 pour lan_user forcé).
+        if (url.includes('/api/shutters/names') && method === 'GET') {
+            return jsonResponse({ shutters: demoShutterNamesList() });
+        }
+        if (url.includes('/api/admin/shutters/names/') && method === 'PUT') {
+            if (demoForcedLanRole() === 'lan_user') return jsonResponse({ error: 'forbidden' }, 403);
+            // Tests : sessionStorage `essensys_demo_names_error` = 403 ou 503 force l'erreur du serveur.
+            try {
+                const forced = sessionStorage.getItem('essensys_demo_names_error');
+                if (forced === '403') return jsonResponse({ error: 'forbidden' }, 403);
+                if (forced === '503') return jsonResponse({ error: 'names_unavailable' }, 503);
+            } catch { /* sessionStorage indisponible */ }
+            const id = decodeURIComponent(new URL(url, window.location.origin).pathname.split('/').pop() ?? '');
+            const body = init?.body ? JSON.parse(String(init.body)) : {};
+            const entry = demoShutterNamesList().find((s) => s.id === id);
+            if (!entry) return jsonResponse({ error: 'unknown_shutter' }, 400);
+            const raw = body.name;
+            const name = typeof raw === 'string' ? raw.trim() : null;
+            if (raw !== null && raw !== undefined && typeof raw !== 'string') return jsonResponse({ error: 'invalid_name' }, 400);
+            if (name !== null && name !== '' && (Array.from(name).length > MAX_NAME_LENGTH || /[<>]/.test(name) || Array.from(name).some((c) => c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127))) {
+                return jsonResponse({ error: 'invalid_name' }, 400);
+            }
+            if (url.includes('test_mode=dry_run')) return jsonResponse({ ...entry, name: name || null, status: 'dry_run' });
+            const updated_at = new Date().toISOString();
+            demoShutterVersions[id] = entry.version + 1;
+            demoShutterNames[id] = name ? { name, version: entry.version + 1, updated_at } : undefined;
+            if (!name) return jsonResponse({ ...entry, name: null, version: entry.version + 1, updated_at, status: 'saved' });
+            return jsonResponse({ ...demoShutterNamesList().find((s) => s.id === id)!, status: 'saved' });
         }
 
         if (url.includes('/api/admin/exchange') && method === 'GET') {
