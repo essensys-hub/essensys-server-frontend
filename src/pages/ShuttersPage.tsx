@@ -5,6 +5,9 @@ import { sendInjection, getExchangeValues } from '../services/legacyApi';
 import { useCanAdminLightTimers } from '../lights/useLightTimers';
 import { ShutterNameEditor } from '../components/Shutters/ShutterNameEditor';
 import { useShutterNames } from '../shutters/useShutterNames';
+import { ObjectLayoutManager } from '../components/Layout/ObjectLayoutManager';
+import { layoutItems } from '../layout/objectLayout';
+import { useObjectLayout } from '../layout/useObjectLayout';
 
 interface Shutter {
   id: string;
@@ -44,6 +47,7 @@ const allShutters = [...shutters, ...stores];
 
 export const ShuttersPage: React.FC = () => {
   const { nameOf } = useShutterNames();
+  const { layout } = useObjectLayout('shutters');
   const canAdminNames = useCanAdminLightTimers(); // lan_admin, ou tous quand l'IAM LAN est désactivé
   const label = (s: Shutter) => nameOf(s.id, s.name);
   const [loading, setLoading] = useState<string | null>(null);
@@ -128,7 +132,13 @@ export const ShuttersPage: React.FC = () => {
     }
   };
 
-  const renderShutterControls = (items: Shutter[], groupName: string) => (
+  const renderShutterControls = (all: Shutter[], groupName: string) => {
+    // Une seule liste filtrée et ordonnée alimente les boutons de groupe et les lignes.
+    const items = layoutItems('shutters', all, layout);
+    if (items.length === 0) {
+      return <p className="text-sm text-gray-500" data-testid={`shutter-group-empty-${groupName}`}>Aucun volet activé</p>;
+    }
+    return (
     <div className="space-y-4">
       {/* Group Actions */}
       <div className="flex gap-2 pb-4 border-b border-gray-100">
@@ -180,7 +190,8 @@ export const ShuttersPage: React.FC = () => {
         ))}
       </div>
     </div>
-  );
+    );
+  };
 
   const renderTimeSettings = () => (
     <div className="space-y-3">
@@ -190,7 +201,7 @@ export const ShuttersPage: React.FC = () => {
         est vide, le firmware ne l'a pas encore communiquée (défaut usine : 120 s, store : 255 s).
       </p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {allShutters.map((item) => {
+        {layoutItems('shutters', allShutters, layout).map((item) => {
           const known = knownTimes[item.timeIndex];
           const edited = editedTimes[item.timeIndex];
           return (
@@ -255,6 +266,8 @@ export const ShuttersPage: React.FC = () => {
           </p>
         </div>
       )}
+
+      {canAdminNames && <ObjectLayoutManager kind="shutters" nameOf={(id) => nameOf(id)} />}
 
       <div className="space-y-6">
         <ControlCard title="Volets" description="Volets roulants">
