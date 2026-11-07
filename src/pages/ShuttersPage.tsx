@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { ViewColumnsIcon } from '@heroicons/react/24/outline';
 import { PageHeader, ControlCard, ActionButton } from '../components/UI';
 import { sendInjection, getExchangeValues } from '../services/legacyApi';
+import { useCanAdminLightTimers } from '../lights/useLightTimers';
+import { ShutterNameEditor } from '../components/Shutters/ShutterNameEditor';
+import { useShutterNames } from '../shutters/useShutterNames';
 
 interface Shutter {
   id: string;
@@ -40,6 +43,9 @@ const stores: Shutter[] = [
 const allShutters = [...shutters, ...stores];
 
 export const ShuttersPage: React.FC = () => {
+  const { nameOf } = useShutterNames();
+  const canAdminNames = useCanAdminLightTimers(); // lan_admin, ou tous quand l'IAM LAN est désactivé
+  const label = (s: Shutter) => nameOf(s.id, s.name);
   const [loading, setLoading] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -67,7 +73,7 @@ export const ShuttersPage: React.FC = () => {
     const seconds = parseInt(raw, 10);
     if (isNaN(seconds) || seconds < 1 || seconds > 255) {
       setSuccess(null);
-      console.error(`[TEMPS VOLETS] Valeur invalide pour ${shutter.name}: ${raw} (1-255 attendu)`);
+      console.error(`[TEMPS VOLETS] Valeur invalide pour ${label(shutter)}: ${raw} (1-255 attendu)`);
       return;
     }
 
@@ -81,7 +87,7 @@ export const ShuttersPage: React.FC = () => {
         delete next[shutter.timeIndex];
         return next;
       });
-      setSuccess(`${shutter.name} : temps de course réglé à ${seconds} s`);
+      setSuccess(`${label(shutter)} : temps de course réglé à ${seconds} s`);
     } catch (e) {
       console.error(e);
     } finally {
@@ -97,7 +103,7 @@ export const ShuttersPage: React.FC = () => {
     try {
       const index = action === 'open' ? shutter.openIndex : shutter.closeIndex;
       await sendInjection(index, shutter.dvalue);
-      setSuccess(`${shutter.name} : ${action === 'open' ? 'Ouvert' : 'Fermé'}`);
+      setSuccess(`${label(shutter)} : ${action === 'open' ? 'Ouvert' : 'Fermé'}`);
     } catch (e) {
       console.error(e);
     } finally {
@@ -147,11 +153,9 @@ export const ShuttersPage: React.FC = () => {
       {/* Individual Controls */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {items.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-          >
-            <span className="text-sm font-medium text-gray-700">{item.name}</span>
+          <div key={item.id} className="p-3 bg-gray-50 rounded-lg" data-testid={`shutter-${item.id}`}>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm font-medium text-gray-700 min-w-0 break-words">{label(item)}</span>
             <div className="flex gap-2">
               <ActionButton
                 label="Ouvrir"
@@ -170,6 +174,8 @@ export const ShuttersPage: React.FC = () => {
                 size="sm"
               />
             </div>
+          </div>
+          {canAdminNames && <ShutterNameEditor id={item.id} />}
           </div>
         ))}
       </div>
@@ -190,10 +196,11 @@ export const ShuttersPage: React.FC = () => {
           return (
             <div
               key={`time-${item.id}`}
+              data-testid={`shutter-time-${item.id}`}
               className="flex items-center justify-between p-3 bg-gray-50 rounded-lg gap-2"
             >
               <div className="min-w-0">
-                <span className="block text-sm font-medium text-gray-700 truncate">{item.name}</span>
+                <span className="block text-sm font-medium text-gray-700 break-words">{label(item)}</span>
                 <span className="block text-xs text-gray-400">
                   {timesLoaded
                     ? known !== undefined
