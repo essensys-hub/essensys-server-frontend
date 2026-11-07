@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActionButton } from '../UI';
+import { useLightNames } from '../../lights/useLightNames';
 import { setLightTimer } from '../../services/legacyApi';
 import {
   RECHECK_DELAYS_MS,
   TIMER_SHORTCUTS,
   formatMinutes,
-  lightTimerLabel,
   parseCustomMinutes,
 } from '../../lights/lightTimers';
 
@@ -35,7 +35,8 @@ export const LightTimerControl: React.FC<LightTimerControlProps> = ({ id, minute
   const timers = useRef<number[]>([]);
   const readRef = useRef(readMinutes);
   readRef.current = readMinutes;
-  const label = lightTimerLabel(id);
+  const { nameOf } = useLightNames();
+  const label = nameOf(id);
 
   useEffect(() => {
     setShown(minutes);

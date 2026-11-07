@@ -5,6 +5,7 @@ import { LightTimerControl } from '../components/Lighting/LightTimerControl';
 import { useArmoireSnapshot } from '../hooks/useArmoireSnapshot';
 import { useTestMode } from '../context/TestModeContext';
 import { useCanAdminLightTimers, useLightTimers } from '../lights/useLightTimers';
+import { useLightNames } from '../lights/useLightNames';
 import { LIGHT_TIMERS, formatMinutes } from '../lights/lightTimers';
 
 export const LightTimersPage: React.FC = () => {
@@ -12,6 +13,7 @@ export const LightTimersPage: React.FC = () => {
   const { snapshot } = useArmoireSnapshot();
   const { enabled: testMode } = useTestMode();
   const { timers, loading, error, refresh } = useLightTimers();
+  const { nameOf } = useLightNames();
 
   const readOne = useCallback(
     (id: string) => async () => (await refresh()).find((t) => t.id === id)?.minutes ?? null,
@@ -48,7 +50,7 @@ export const LightTimersPage: React.FC = () => {
                 const minutes = timers.find((t) => t.id === entry.id)?.minutes ?? null;
                 return (
                   <li key={entry.id} data-testid={`light-timers-item-${entry.id}`}>
-                    <ControlCard title={entry.label} description={`Actuellement : ${formatMinutes(minutes)}`}>
+                    <ControlCard title={nameOf(entry.id, entry.label)} description={`Actuellement : ${formatMinutes(minutes)}`}>
                       <LightTimerControl
                         id={entry.id}
                         minutes={minutes}
