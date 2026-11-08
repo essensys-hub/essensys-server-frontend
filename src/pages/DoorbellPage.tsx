@@ -151,7 +151,7 @@ export const DoorbellPage: React.FC = () => {
             )}
           </ControlCard>
 
-          <ControlCard title="Lumières à faire clignoter" description="Remises dans leur état d'origine après la séquence. Les lumières masquées ne sont pas proposées.">
+          <ControlCard title="Lumières à faire clignoter" description="Elles finissent allumées après la séquence. Les lumières masquées ne sont pas proposées.">
             <ul className="grid gap-2 sm:grid-cols-2" data-testid="doorbell-lights">
               {lights.map((l) => (
                 <li key={l.id}>

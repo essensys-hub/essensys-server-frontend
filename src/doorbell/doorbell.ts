@@ -117,6 +117,7 @@ export const doorbellErrorMessage = (status: number, code: string | null): strin
   if (status === 403) return "Réservé à l'administrateur de l'armoire";
   if (code === 'unknown_light') return 'Lumière inconnue de la passerelle';
   if (code === 'unknown_camera') return 'Caméra inconnue de la console UniFi';
+  if (code === 'invalid_settings') return 'Réglages refusés par la passerelle (activation, caméra ou lumières manquantes)';
   if (code === 'invalid_blinks') return `Nombre de clignotements refusé (${MIN_BLINKS} à ${MAX_BLINKS})`;
   if (code === 'names_unavailable') return 'Stockage des réglages indisponible sur la passerelle, réessayez plus tard';
   if (code === 'doorbell_unavailable') return 'Sonnette indisponible : console UniFi désactivée ou injoignable';

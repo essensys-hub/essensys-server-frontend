@@ -110,6 +110,7 @@ test.describe('logique de la sonnette', () => {
     expect(doorbellErrorMessage(400, 'invalid_blinks')).toMatch(/1 à 10/);
     expect(doorbellErrorMessage(503, 'names_unavailable')).toMatch(/Stockage .* indisponible/);
     expect(doorbellErrorMessage(503, 'doorbell_unavailable')).toMatch(/console UniFi .* injoignable/);
+    expect(doorbellErrorMessage(400, 'invalid_settings')).toMatch(/Réglages refusés/);
     expect(doorbellErrorMessage(500, null)).toMatch(/\(500\)/);
   });
 });

@@ -16,7 +16,7 @@ Quand quelqu'un sonne, afficher la vidéo de la sonnette UniFi dans le portail l
 - Activer ou désactiver la fonction (désactivée par défaut).
 - Choisir la caméra de la sonnette (liste de la console UniFi).
 - Choisir les lumières qui clignotent : noms personnalisés affichés, lumières masquées de l'affichage non proposées (une lumière masquée déjà choisie reste visible avec « (masquée) » pour pouvoir la retirer).
-- Nombre de clignotements de 1 à 10.
+- Nombre de clignotements de 1 à 10. À la fin de la séquence, les lumières choisies restent **allumées** (la gateway ne lit pas leur état réel et ne restaure rien).
 - **Enregistrer** envoie un seul `PUT` ; **Essayer** simule une pression avec les réglages enregistrés (désactivé tant que des modifications ne sont pas enregistrées). En mode test du portail, l'essai est à sec : aucune lumière n'est commandée.
 
 ## Permissions
@@ -32,7 +32,7 @@ Quand quelqu'un sonne, afficher la vidéo de la sonnette UniFi dans le portail l
 | `GET/PUT /api/admin/doorbell/settings` | `{"enabled","camera_id","lights":[…],"blinks":1..10}` |
 | `POST /api/admin/doorbell/test` | essai ; en-tête `X-Essensys-Test-Mode: dry-run` : aucune écriture dans l'armoire |
 
-Erreurs affichées en français : 403, `unknown_light`, `unknown_camera`, `invalid_blinks`, `names_unavailable` (503), `doorbell_unavailable` (503). Contrat complet dans le change commun (`essensys-feature-lifecycle`).
+Erreurs affichées en français : 403, `invalid_settings`, `unknown_light`, `unknown_camera`, `invalid_blinks`, `names_unavailable` (503), `doorbell_unavailable` (503). Contrat complet dans le change commun (`essensys-feature-lifecycle`).
 
 ## Limites connues
 
