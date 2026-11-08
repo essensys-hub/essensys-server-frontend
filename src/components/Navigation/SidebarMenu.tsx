@@ -17,6 +17,7 @@ import {
   UsersIcon,
   UserCircleIcon,
   ClockIcon,
+  BellAlertIcon,
 } from '@heroicons/react/24/outline';
 import { useLanAuth } from '../../hooks/useLanAuth';
 import { useLanIamMode } from '../../context/LanIamContext';
@@ -50,6 +51,8 @@ const navItems: NavItem[] = [
 
 const lightTimersNavItem: NavItem = { to: '/lighting/timers', icon: ClockIcon, label: 'Temporisations' };
 
+const doorbellNavItem: NavItem = { to: '/settings/doorbell', icon: BellAlertIcon, label: 'Sonnette' };
+
 export function useAdminNavItems(): NavItem[] {
   const { enabled } = useLanIamMode();
   const { user } = useLanAuth();
@@ -57,7 +60,7 @@ export function useAdminNavItems(): NavItem[] {
 
   return useMemo(() => {
     // Temporisations des lumières : administrateur de l'armoire (lan_admin, ou tous si l'IAM LAN est désactivé).
-    const items = canAdminTimers ? [lightTimersNavItem, ...baseAdminNavItems] : [...baseAdminNavItems];
+    const items = canAdminTimers ? [lightTimersNavItem, doorbellNavItem, ...baseAdminNavItems] : [...baseAdminNavItems];
     if (!enabled || !user) return items;
     if (user.role === 'lan_admin') {
       items.unshift({ to: '/settings/users', icon: UsersIcon, label: 'Comptes .local' });

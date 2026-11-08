@@ -6,6 +6,7 @@ import {
   MobileDrawer, 
   MobileHeader 
 } from '../components/Navigation';
+import { DoorbellWindow } from '../components/Doorbell/DoorbellWindow';
 import { TestModeBanner } from '../components/UI/TestModeBanner';
 
 interface MainLayoutProps {
@@ -42,6 +43,9 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
       {/* Mobile Bottom Tabs */}
       <BottomTabs onMoreClick={openDrawer} />
+
+      {/* Fenêtre de sonnette : toutes les pages */}
+      <DoorbellWindow />
     </div>
   );
 };

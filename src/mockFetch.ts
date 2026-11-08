@@ -2,6 +2,7 @@ import { handleMockScenarioRequest } from './mockScenarios';
 import { LIGHT_NAME_CATALOG, MAX_NAME_LENGTH } from './lights/lightNames';
 import { SHUTTER_NAME_CATALOG } from './shutters/shutterNames';
 import { CATALOGUES, type LayoutKind } from './layout/objectLayout';
+import { MAX_BLINKS, MIN_BLINKS } from './doorbell/doorbell';
 
 const originalFetch = window.fetch;
 
@@ -48,6 +49,16 @@ const demoLayouts: Record<LayoutKind, { order: string[]; disabled: string[]; ver
 const demoStringList = (v: unknown, known: Set<string>): string[] | null => {
     if (!Array.isArray(v) || v.some((x) => typeof x !== 'string') || new Set(v).size !== v.length) return null;
     return (v as string[]).every((x) => known.has(x)) ? (v as string[]) : [];
+};
+
+
+/** Sonnette (sonnette-unifi-2026-11-007), en mémoire : l'essai ne commande aucune lumière et n'écrit rien dans l'armoire. */
+const DEMO_CAMERA_IDS = ['cam-mock-1'];
+const demoDoorbell = {
+    settings: { enabled: false, camera_id: '', lights: [] as string[], blinks: 5, version: 0, updated_at: null as string | null },
+    ringing_until: null as string | null,
+    last_ring_at: null as string | null,
+    initialised: false,
 };
 
 /** Rôle LAN de la session de démonstration : lan_admin sur /settings/users, ou si sessionStorage
@@ -251,6 +262,83 @@ export function setupMocks() {
                 Object.assign(state, next, { version: state.version + 1, updated_at });
                 return jsonResponse({ ...publicDoc(), status: 'saved' });
             }
+        }
+
+        // Sonnette : état et flux pour tous, réglages et essai réservés à lan_admin (403 pour lan_user forcé).
+        // Tests (sessionStorage) : `essensys_demo_doorbell_init` = JSON {settings, available} ; `essensys_demo_doorbell_status` = JSON
+        // qui remplace l'état renvoyé ; `essensys_demo_doorbell_error` = 403 | 503 | unknown_camera | invalid_blinks sur l'écriture ;
+        // `essensys_demo_doorbell_cameras` = 503 force l'échec de la liste des caméras ; `essensys_demo_doorbell_absent` = 404.
+        const doorbellPath = new URL(url, window.location.origin).pathname;
+        if (/^\/api\/(admin\/)?doorbell\//.test(doorbellPath)) {
+            const ss = (key: string): string | null => {
+                try {
+                    return sessionStorage.getItem(key);
+                } catch {
+                    return null;
+                }
+            };
+            if (!demoDoorbell.initialised) {
+                demoDoorbell.initialised = true;
+                try {
+                    Object.assign(demoDoorbell.settings, JSON.parse(ss('essensys_demo_doorbell_init') ?? '{}').settings ?? {});
+                } catch { /* JSON invalide : réglages par défaut */ }
+            }
+            if (ss('essensys_demo_doorbell_absent') === '404') return jsonResponse({ error: 'not_found' }, 404);
+            const forcedStatus = ss('essensys_demo_doorbell_status');
+            if (doorbellPath === '/api/doorbell/status' && method === 'GET') {
+                if (forcedStatus) return jsonResponse(JSON.parse(forcedStatus));
+                const ringing = demoDoorbell.ringing_until !== null && Date.parse(demoDoorbell.ringing_until) > Date.now();
+                return jsonResponse({
+                    enabled: demoDoorbell.settings.enabled,
+                    available: demoDoorbell.settings.enabled,
+                    ringing,
+                    ringing_until: demoDoorbell.ringing_until,
+                    last_ring_at: demoDoorbell.last_ring_at,
+                });
+            }
+            if (doorbellPath.startsWith('/api/admin/')) {
+                if (demoForcedLanRole() === 'lan_user') return jsonResponse({ error: 'forbidden' }, 403);
+                const settingsDoc = () => ({ ...demoDoorbell.settings });
+                if (doorbellPath === '/api/admin/doorbell/settings' && method === 'GET') return jsonResponse(settingsDoc());
+                if (doorbellPath === '/api/admin/doorbell/settings' && method === 'PUT') {
+                    const forced = ss('essensys_demo_doorbell_error');
+                    if (forced === '403') return jsonResponse({ error: 'forbidden' }, 403);
+                    if (forced === '503') return jsonResponse({ error: 'names_unavailable' }, 503);
+                    if (forced === 'unknown_camera' || forced === 'invalid_blinks') return jsonResponse({ error: forced }, 400);
+                    const body = init?.body ? JSON.parse(String(init.body)) : {};
+                    const known = new Set(LIGHT_NAME_CATALOG.map(([id]) => id));
+                    if (!Array.isArray(body.lights) || body.lights.some((id: unknown) => typeof id !== 'string' || !known.has(id))) {
+                        return jsonResponse({ error: 'unknown_light' }, 400);
+                    }
+                    if (!Number.isInteger(body.blinks) || body.blinks < MIN_BLINKS || body.blinks > MAX_BLINKS) {
+                        return jsonResponse({ error: 'invalid_blinks' }, 400);
+                    }
+                    if (body.camera_id && !DEMO_CAMERA_IDS.includes(body.camera_id)) return jsonResponse({ error: 'unknown_camera' }, 400);
+                    Object.assign(demoDoorbell.settings, {
+                        enabled: body.enabled === true, camera_id: body.camera_id ?? '', lights: body.lights, blinks: body.blinks,
+                        version: demoDoorbell.settings.version + 1, updated_at: new Date().toISOString(),
+                    });
+                    return jsonResponse(settingsDoc());
+                }
+                if (doorbellPath === '/api/admin/doorbell/test' && method === 'POST') {
+                    if (!demoDoorbell.settings.enabled) return jsonResponse({ error: 'doorbell_unavailable' }, 503);
+                    const dryRun = url.includes('test_mode=dry_run') || new Headers(init?.headers).get('X-Essensys-Test-Mode') === 'dry-run';
+                    const nowMs = Date.now();
+                    demoDoorbell.last_ring_at = new Date(nowMs).toISOString();
+                    demoDoorbell.ringing_until = new Date(nowMs + 60_000).toISOString();
+                    return jsonResponse({ status: dryRun ? 'dry_run' : 'started', ringing: true });
+                }
+            }
+        }
+
+        if (url.includes('/api/unifi/cameras') && method === 'GET' && !url.includes('/snapshot') && (() => {
+            try {
+                return sessionStorage.getItem('essensys_demo_doorbell_cameras') === '503';
+            } catch {
+                return false;
+            }
+        })()) {
+            return jsonResponse({ error: 'doorbell_unavailable' }, 503);
         }
 
         if (url.includes('/api/admin/exchange') && method === 'GET') {

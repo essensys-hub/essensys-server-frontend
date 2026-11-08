@@ -1,0 +1,134 @@
+{
+  "$schema": "./schema/feature.schema.json",
+  "id": "sonnette-unifi-2026-11-007",
+  "title": "Sonnette UniFi : fenêtre vidéo et écran de réglage sur le portail local",
+  "status": "proposed",
+  "owner": "hermes",
+  "git": {
+    "branch": "feat/sonnette-unifi-2026-11-007",
+    "pr_url": null
+  },
+  "openspec": {
+    "change_id": "sonnette-unifi-2026-11-007",
+    "path": "openspec/changes/sonnette-unifi-2026-11-007",
+    "proposal": "openspec/changes/sonnette-unifi-2026-11-007/proposal.md",
+    "design": "openspec/changes/sonnette-unifi-2026-11-007/design.md",
+    "tasks": "openspec/changes/sonnette-unifi-2026-11-007/tasks.md",
+    "specs": [
+      "openspec/changes/sonnette-unifi-2026-11-007/specs/doorbell-portal-local/spec.md"
+    ]
+  },
+  "implementation": {
+    "paths": [
+      "src/doorbell/doorbell.ts",
+      "src/doorbell/doorbellApi.ts",
+      "src/doorbell/useDoorbellStatus.ts",
+      "src/components/Doorbell/DoorbellWindow.tsx",
+      "src/pages/DoorbellPage.tsx",
+      "src/layouts/MainLayout.tsx",
+      "src/App.tsx",
+      "src/components/Navigation/SidebarMenu.tsx",
+      "src/mockFetch.ts"
+    ],
+    "primary_surface": "react-user"
+  },
+  "userguide": {
+    "pages": [
+      "docs/features/doorbell.md"
+    ],
+    "language": "fr",
+    "i18n_keys": [],
+    "screenshots": []
+  },
+  "tests": {
+    "playwright": [
+      "e2e/tests/doorbell.spec.ts",
+      "e2e/tests/doorbell-logic.spec.ts"
+    ],
+    "pytest": [],
+    "testthat": [],
+    "coverage_must_test": [
+      "quelle que soit la page",
+      "fermeture sans reouverture pour la meme sonnerie",
+      "reouverture pour la sonnerie suivante",
+      "fonction desactivee ou indisponible sans fenetre ni requete video",
+      "ancienne gateway 404 sans message",
+      "flux en erreur 503",
+      "reglage deux lumieres et 3 clignotements un seul PUT relu a la reouverture",
+      "noms 41 non 55",
+      "clignotements hors plage",
+      "enregistrement impossible nombre de clignotements hors plage",
+      "aucun ordre vers l armoire",
+      "masque pour lan_user quand l IAM est actif",
+      "lan_user voit la fenetre de sonnerie"
+    ],
+    "smoke_tags": [
+      "@nr"
+    ],
+    "ux_matrix": {
+      "required": true,
+      "devices": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "targets": [
+        "local"
+      ],
+      "required_projects": [
+        "local-desktop",
+        "local-iphone",
+        "local-ipad"
+      ],
+      "screenshots_required": true,
+      "visual_regression_required": true,
+      "no_armoire_required": true,
+      "notes": "Fenêtre de sonnerie et écran Sonnette du portail local, build démo servi en local (ESSENSYS_LOCAL_URL) ; fixture no-armoire, flux vidéo simulé, aucune requête armoire ni console UniFi."
+    },
+    "ux_evidence": {
+      "playwright_report": null,
+      "screenshots": [],
+      "last_run_at": "2026-11-08",
+      "devices_validated": [
+        "desktop",
+        "iphone",
+        "ipad"
+      ],
+      "status": "not-run",
+      "reviewer": null,
+      "notes": "local-desktop, local-iphone, local-ipad ; pas de capture de référence : à produire au /checkup."
+    }
+  },
+  "release": {
+    "changelog_entry": "Portail local : fenêtre « Quelqu'un sonne » avec la vidéo de la sonnette UniFi et écran de réglage de l'administrateur (#58).",
+    "target_tag": null,
+    "surfaces": [
+      "react-user",
+      "server-frontend"
+    ],
+    "paths": []
+  },
+  "security": {
+    "sca_tool": "dependabot",
+    "dependabot_alerts_url": null,
+    "last_scan_at": null,
+    "cve_findings": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0
+    },
+    "secret_scan": {
+      "status": "clean",
+      "tool": "gitleaks",
+      "last_scan_at": null
+    },
+    "muted_findings": [],
+    "threat_model_url": null,
+    "owner_security": "hermes"
+  },
+  "github": {
+    "issue": "essensys-hub/essensys-feature-lifecycle#58",
+    "project_item": null
+  }
+}
