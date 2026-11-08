@@ -221,3 +221,61 @@ test.describe('sonnette — plages horaires (portail local)', () => {
     await expect(page.locator('[data-testid^="sched-cell-"][data-on="1"]')).toHaveCount(168);
   });
 });
+
+const PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+  'base64',
+);
+const inMinutes = (m: number) => new Date(Date.now() + m * 60_000).toISOString();
+const ringingStatus = (over: Record<string, unknown> = {}) => ({
+  enabled: true, available: true, ringing: true, ringing_until: inMinutes(10), last_ring_at: '2026-11-08T10:00:00Z', ...over,
+});
+const setStatus = (page: Page, status: unknown) =>
+  page.addInitScript((s) => sessionStorage.setItem('essensys_demo_doorbell_status', JSON.stringify(s)), status);
+const mockStream = (page: Page) =>
+  page.route('**/api/doorbell/stream*', (route) => route.fulfill({ status: 200, contentType: 'image/png', body: PNG }));
+
+test.describe('sonnette — hors plage (portail local)', () => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    void page;
+    test.skip(currentTarget(testInfo) !== 'local', 'Portail local uniquement.');
+  });
+
+  test('@nr NR-server-frontend-12 hors plage : la fenêtre vidéo reste active avec la mention', async ({ page }) => {
+    await mockStream(page);
+    await setStatus(page, ringingStatus({ in_window: false }));
+    await goto(page, 'dashboard');
+    const win = page.getByRole('dialog', { name: "Quelqu'un sonne" });
+    await expect(win).toBeVisible();
+    await expect(win.getByTestId('doorbell-video')).toBeVisible();
+    await expect(win.getByTestId('doorbell-out-of-window')).toHaveText('hors plage : pas de clignotement ni de notification');
+    await win.getByRole('button', { name: 'Fermer' }).click();
+    await expect(win).toHaveCount(0);
+  });
+
+  test('@nr NR-server-frontend-12 dans la plage, ou champ absent (ancienne gateway) : aucune mention', async ({ page }) => {
+    await mockStream(page);
+    await setStatus(page, ringingStatus({ in_window: true }));
+    await goto(page, 'dashboard');
+    await expect(page.getByTestId('doorbell-window')).toBeVisible();
+    await expect(page.getByTestId('doorbell-out-of-window')).toHaveCount(0);
+    await page.evaluate((s) => sessionStorage.setItem('essensys_demo_doorbell_status', JSON.stringify(s)), ringingStatus());
+    await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+    await expect(page.getByTestId('doorbell-window')).toBeVisible();
+    await expect(page.getByTestId('doorbell-out-of-window')).toHaveCount(0);
+  });
+
+  test('@nr NR-server-frontend-12 Essayer : l essai ignore la plage, la mention suit l état de la gateway', async ({ page }) => {
+    await mockStream(page);
+    await recordFetch(page);
+    await initSettings(page, { enabled: true, camera_id: 'cam-mock-1', lights: ['salon'], blinks: 3, schedule: customSchedule({}) });
+    await goto(page, 'settings/doorbell');
+    await page.getByRole('button', { name: 'Essayer' }).click();
+    await expect(page.getByRole('status')).toContainText('Essai');
+    const win = page.getByRole('dialog', { name: "Quelqu'un sonne" });
+    await expect(win).toBeVisible(); // la fenêtre s ouvre malgré une grille entièrement inactive
+    await expect(win.getByTestId('doorbell-out-of-window')).toBeVisible(); // la démo évalue la plage comme la gateway
+    const calls = await recordedCalls(page);
+    expect(calls.filter((c) => c.url.includes('/api/admin/inject') || c.url.includes('/web/actions') || c.url.includes('/api/admin/exchange'))).toHaveLength(0);
+  });
+});

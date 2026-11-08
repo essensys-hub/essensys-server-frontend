@@ -3,7 +3,7 @@ import { LIGHT_NAME_CATALOG, MAX_NAME_LENGTH } from './lights/lightNames';
 import { SHUTTER_NAME_CATALOG } from './shutters/shutterNames';
 import { CATALOGUES, type LayoutKind } from './layout/objectLayout';
 import { MAX_BLINKS, MIN_BLINKS } from './doorbell/doorbell';
-import { DEFAULT_SCHEDULE, fullGrid, validateSchedule, type DoorbellSchedule } from './doorbell/doorbellSchedule';
+import { DEFAULT_SCHEDULE, fullGrid, isInWindow, validateSchedule, type DoorbellSchedule } from './doorbell/doorbellSchedule';
 
 const originalFetch = window.fetch;
 
@@ -298,6 +298,7 @@ export function setupMocks() {
                     ringing,
                     ringing_until: demoDoorbell.ringing_until,
                     last_ring_at: demoDoorbell.last_ring_at,
+                    in_window: isInWindow(demoDoorbell.settings.schedule, Date.now()),
                 });
             }
             if (doorbellPath.startsWith('/api/admin/')) {

@@ -9,7 +9,7 @@ import { doorbellStreamUrl } from '../../doorbell/doorbellApi';
  * Fonction désactivée ou indisponible : aucune fenêtre et aucune requête vidéo.
  */
 export const DoorbellWindow: React.FC = () => {
-  const { visible, ring, dismiss } = useDoorbellStatus();
+  const { status, visible, ring, dismiss } = useDoorbellStatus();
   // Échec de la vidéo mémorisé par sonnerie : la sonnerie suivante retente le flux.
   const [failedRing, setFailedRing] = useState<string | null>(null);
 
@@ -51,6 +51,11 @@ export const DoorbellWindow: React.FC = () => {
             className="w-full rounded-lg bg-black aspect-video object-contain"
             onError={() => setFailedRing(ring)}
           />
+        )}
+        {!status.in_window && (
+          <p className="p-2 text-sm bg-amber-50 border border-amber-200 rounded-lg text-amber-900" data-testid="doorbell-out-of-window">
+            hors plage : pas de clignotement ni de notification
+          </p>
         )}
         <p className="text-xs text-gray-500">Image rafraîchie environ une fois par seconde.</p>
       </div>

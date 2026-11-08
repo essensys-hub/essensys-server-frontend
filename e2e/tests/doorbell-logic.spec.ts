@@ -20,10 +20,17 @@ const NOW = Date.parse('2026-11-08T10:00:30Z');
 
 test.describe('logique de la sonnette', () => {
   test('@nr NR-server-frontend-11 état par défaut : fonction désactivée, aucune fenêtre', () => {
-    expect(DEFAULT_STATUS).toEqual({ enabled: false, available: false, ringing: false, ringing_until: null, last_ring_at: null });
+    expect(DEFAULT_STATUS).toEqual({ enabled: false, available: false, ringing: false, ringing_until: null, last_ring_at: null, in_window: true });
     expect(parseStatus(null)).toEqual(DEFAULT_STATUS);
     expect(parseStatus('x')).toEqual(DEFAULT_STATUS);
     expect(shouldShowWindow(DEFAULT_STATUS, null, NOW)).toBe(false);
+  });
+
+  test('@nr NR-server-frontend-12 in_window : lu tel quel, absent (ancienne gateway) = vrai, la fenêtre reste affichée hors plage', () => {
+    expect(parseStatus({ enabled: true }).in_window).toBe(true);
+    expect(parseStatus({ in_window: false }).in_window).toBe(false);
+    expect(parseStatus({ in_window: 'non' }).in_window).toBe(true);
+    expect(shouldShowWindow(ringing({ in_window: false }), null, NOW)).toBe(true);
   });
 
   test('@nr NR-server-frontend-11 sonnerie : fenêtre affichée', () => {

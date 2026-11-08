@@ -2,6 +2,7 @@
  * Sonnette UniFi (sonnette-unifi-2026-11-007) : état, fenêtre « Quelqu'un sonne » et réglages de l'administrateur.
  *
  * Contrat (portail local) : GET /api/doorbell/status -> {"enabled","available","ringing","ringing_until","last_ring_at"} ;
+ * (+ "in_window" : la case horaire courante est active, plages #61 ; absent = vrai) ;
  * GET /api/doorbell/stream (instantanés, environ une image par seconde) ;
  * GET/PUT /api/admin/doorbell/settings {"enabled","camera_id","lights":[ids],"blinks":1..10,"schedule":{...}} ;
  * POST /api/admin/doorbell/test (essai, en-tête X-Essensys-Test-Mode: dry-run : aucune écriture dans l'armoire).
@@ -18,10 +19,12 @@ export interface DoorbellStatus {
   ringing: boolean;
   ringing_until: string | null;
   last_ring_at: string | null;
+  /** Plage horaire : la case courante est active. Hors plage : ni clignotement ni notification, la vidéo reste affichée. */
+  in_window: boolean;
 }
 
 export const DEFAULT_STATUS: DoorbellStatus = {
-  enabled: false, available: false, ringing: false, ringing_until: null, last_ring_at: null,
+  enabled: false, available: false, ringing: false, ringing_until: null, last_ring_at: null, in_window: true,
 };
 
 /** Interrogation de l'état : 2 s tant que la fenêtre est ouverte, 5 s sinon. */
@@ -39,6 +42,7 @@ export const parseStatus = (raw: unknown): DoorbellStatus => {
     ringing: r.ringing === true,
     ringing_until: text(r.ringing_until),
     last_ring_at: text(r.last_ring_at),
+    in_window: r.in_window !== false,
   };
 };
 
