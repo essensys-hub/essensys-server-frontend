@@ -2,12 +2,16 @@
  * Sonnette UniFi (sonnette-unifi-2026-11-007) : état, fenêtre « Quelqu'un sonne » et réglages de l'administrateur.
  *
  * Contrat (portail local) : GET /api/doorbell/status -> {"enabled","available","ringing","ringing_until","last_ring_at"} ;
+ * (+ "in_window" : la case horaire courante est active, plages #61 ; absent = vrai) ;
  * GET /api/doorbell/stream (instantanés, environ une image par seconde) ;
- * GET/PUT /api/admin/doorbell/settings {"enabled","camera_id","lights":[ids],"blinks":1..10} ;
+ * GET/PUT /api/admin/doorbell/settings {"enabled","camera_id","lights":[ids],"blinks":1..10,"schedule":{...}} ;
  * POST /api/admin/doorbell/test (essai, en-tête X-Essensys-Test-Mode: dry-run : aucune écriture dans l'armoire).
  * Verrouillé par NR-server-frontend-11.
  */
 import { effectiveLayout, type ObjectLayout } from '../layout/objectLayout';
+import {
+  DEFAULT_SCHEDULE, INVALID_SCHEDULE_MESSAGE, cloneSchedule, parseSchedule, sameSchedule, type DoorbellSchedule,
+} from './doorbellSchedule';
 
 export interface DoorbellStatus {
   enabled: boolean;
@@ -15,10 +19,12 @@ export interface DoorbellStatus {
   ringing: boolean;
   ringing_until: string | null;
   last_ring_at: string | null;
+  /** Plage horaire : la case courante est active. Hors plage : ni clignotement ni notification, la vidéo reste affichée. */
+  in_window: boolean;
 }
 
 export const DEFAULT_STATUS: DoorbellStatus = {
-  enabled: false, available: false, ringing: false, ringing_until: null, last_ring_at: null,
+  enabled: false, available: false, ringing: false, ringing_until: null, last_ring_at: null, in_window: true,
 };
 
 /** Interrogation de l'état : 2 s tant que la fenêtre est ouverte, 5 s sinon. */
@@ -36,6 +42,7 @@ export const parseStatus = (raw: unknown): DoorbellStatus => {
     ringing: r.ringing === true,
     ringing_until: text(r.ringing_until),
     last_ring_at: text(r.last_ring_at),
+    in_window: r.in_window !== false,
   };
 };
 
@@ -58,6 +65,7 @@ export interface DoorbellSettings {
   camera_id: string;
   lights: string[];
   blinks: number;
+  schedule: DoorbellSchedule;
   version: number;
   updated_at: string | null;
 }
@@ -66,7 +74,7 @@ export const MIN_BLINKS = 1;
 export const MAX_BLINKS = 10;
 
 export const DEFAULT_SETTINGS: DoorbellSettings = {
-  enabled: false, camera_id: '', lights: [], blinks: 5, version: 0, updated_at: null,
+  enabled: false, camera_id: '', lights: [], blinks: 5, schedule: DEFAULT_SCHEDULE, version: 0, updated_at: null,
 };
 
 /** Lecture tolérante (updated_by n'est jamais conservé). */
@@ -78,6 +86,7 @@ export const parseSettings = (raw: unknown): DoorbellSettings => {
     camera_id: typeof r.camera_id === 'string' ? r.camera_id : '',
     lights: Array.isArray(r.lights) ? r.lights.filter((x): x is string => typeof x === 'string') : [],
     blinks: typeof r.blinks === 'number' ? r.blinks : DEFAULT_SETTINGS.blinks,
+    schedule: parseSchedule(r.schedule),
     version: typeof r.version === 'number' ? r.version : 0,
     updated_at: typeof r.updated_at === 'string' ? r.updated_at : null,
   };
@@ -87,8 +96,14 @@ export const validateBlinks = (n: number): string | null =>
   Number.isInteger(n) && n >= MIN_BLINKS && n <= MAX_BLINKS ? null : `Nombre de clignotements de ${MIN_BLINKS} à ${MAX_BLINKS}`;
 
 export const buildSettingsWrite = (s: DoorbellSettings) => ({
-  enabled: s.enabled, camera_id: s.camera_id, lights: [...s.lights], blinks: s.blinks,
+  enabled: s.enabled, camera_id: s.camera_id, lights: [...s.lights], blinks: s.blinks, schedule: cloneSchedule(s.schedule),
 });
+
+/** Réglages identiques (version et date exclues). */
+export const sameDoorbellSettings = (a: DoorbellSettings, b: DoorbellSettings): boolean =>
+  a.enabled === b.enabled && a.camera_id === b.camera_id && a.blinks === b.blinks
+  && a.lights.length === b.lights.length && a.lights.every((l, i) => l === b.lights[i])
+  && sameSchedule(a.schedule, b.schedule);
 
 export interface SelectableLight {
   id: string;
@@ -119,6 +134,7 @@ export const doorbellErrorMessage = (status: number, code: string | null): strin
   if (code === 'unknown_camera') return 'Caméra inconnue de la console UniFi';
   if (code === 'invalid_settings') return 'Réglages refusés par la passerelle (activation, caméra ou lumières manquantes)';
   if (code === 'invalid_blinks') return `Nombre de clignotements refusé (${MIN_BLINKS} à ${MAX_BLINKS})`;
+  if (code === 'invalid_schedule') return INVALID_SCHEDULE_MESSAGE;
   if (code === 'names_unavailable') return 'Stockage des réglages indisponible sur la passerelle, réessayez plus tard';
   if (code === 'doorbell_unavailable') return 'Sonnette indisponible : console UniFi désactivée ou injoignable';
   return `Opération impossible (${status})`;

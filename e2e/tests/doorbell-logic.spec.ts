@@ -9,6 +9,7 @@ import {
   selectableLights, shouldShowWindow, toggleLight, validateBlinks,
 } from '../../src/doorbell/doorbell';
 import { DEFAULT_LAYOUT } from '../../src/layout/objectLayout';
+import { DEFAULT_SCHEDULE } from '../../src/doorbell/doorbellSchedule';
 
 const ringing = (over: Record<string, unknown> = {}) =>
   parseStatus({
@@ -19,10 +20,17 @@ const NOW = Date.parse('2026-11-08T10:00:30Z');
 
 test.describe('logique de la sonnette', () => {
   test('@nr NR-server-frontend-11 état par défaut : fonction désactivée, aucune fenêtre', () => {
-    expect(DEFAULT_STATUS).toEqual({ enabled: false, available: false, ringing: false, ringing_until: null, last_ring_at: null });
+    expect(DEFAULT_STATUS).toEqual({ enabled: false, available: false, ringing: false, ringing_until: null, last_ring_at: null, in_window: true });
     expect(parseStatus(null)).toEqual(DEFAULT_STATUS);
     expect(parseStatus('x')).toEqual(DEFAULT_STATUS);
     expect(shouldShowWindow(DEFAULT_STATUS, null, NOW)).toBe(false);
+  });
+
+  test('@nr NR-server-frontend-12 in_window : lu tel quel, absent (ancienne gateway) = vrai, la fenêtre reste affichée hors plage', () => {
+    expect(parseStatus({ enabled: true }).in_window).toBe(true);
+    expect(parseStatus({ in_window: false }).in_window).toBe(false);
+    expect(parseStatus({ in_window: 'non' }).in_window).toBe(true);
+    expect(shouldShowWindow(ringing({ in_window: false }), null, NOW)).toBe(true);
   });
 
   test('@nr NR-server-frontend-11 sonnerie : fenêtre affichée', () => {
@@ -64,7 +72,7 @@ test.describe('logique de la sonnette', () => {
     expect(DEFAULT_SETTINGS).toMatchObject({ enabled: false, camera_id: '', lights: [], blinks: 5, version: 0 });
     expect(parseSettings(undefined)).toEqual(DEFAULT_SETTINGS);
     expect(parseSettings({ enabled: true, camera_id: 'cam1', lights: ['salon', 3], blinks: 3, version: 2, updated_at: 'x', updated_by: 'secret' }))
-      .toEqual({ enabled: true, camera_id: 'cam1', lights: ['salon'], blinks: 3, version: 2, updated_at: 'x' });
+      .toEqual({ enabled: true, camera_id: 'cam1', lights: ['salon'], blinks: 3, schedule: DEFAULT_SCHEDULE, version: 2, updated_at: 'x' });
   });
 
   test('@nr NR-server-frontend-11 clignotements : entier de 1 à 10', () => {
@@ -76,7 +84,7 @@ test.describe('logique de la sonnette', () => {
 
   test('@nr NR-server-frontend-11 corps du PUT : quatre champs, sans version ni mention de l auteur', () => {
     expect(buildSettingsWrite({ ...DEFAULT_SETTINGS, enabled: true, camera_id: 'cam1', lights: ['salon', 'sam'], blinks: 3, version: 4 }))
-      .toEqual({ enabled: true, camera_id: 'cam1', lights: ['salon', 'sam'], blinks: 3 });
+      .toEqual({ enabled: true, camera_id: 'cam1', lights: ['salon', 'sam'], blinks: 3, schedule: DEFAULT_SCHEDULE });
   });
 
   test('@nr NR-server-frontend-11 lumières proposées : catalogue, noms personnalisés, masquées (#55) non proposées', () => {

@@ -3,6 +3,7 @@ import { LIGHT_NAME_CATALOG, MAX_NAME_LENGTH } from './lights/lightNames';
 import { SHUTTER_NAME_CATALOG } from './shutters/shutterNames';
 import { CATALOGUES, type LayoutKind } from './layout/objectLayout';
 import { MAX_BLINKS, MIN_BLINKS } from './doorbell/doorbell';
+import { DEFAULT_SCHEDULE, fullGrid, isInWindow, validateSchedule, type DoorbellSchedule } from './doorbell/doorbellSchedule';
 
 const originalFetch = window.fetch;
 
@@ -55,7 +56,10 @@ const demoStringList = (v: unknown, known: Set<string>): string[] | null => {
 /** Sonnette (sonnette-unifi-2026-11-007), en mémoire : l'essai ne commande aucune lumière et n'écrit rien dans l'armoire. */
 const DEMO_CAMERA_IDS = ['cam-mock-1'];
 const demoDoorbell = {
-    settings: { enabled: false, camera_id: '', lights: [] as string[], blinks: 5, version: 0, updated_at: null as string | null },
+    settings: {
+        enabled: false, camera_id: '', lights: [] as string[], blinks: 5, version: 0, updated_at: null as string | null,
+        schedule: { ...DEFAULT_SCHEDULE, grid: fullGrid() } as DoorbellSchedule,
+    },
     ringing_until: null as string | null,
     last_ring_at: null as string | null,
     initialised: false,
@@ -266,7 +270,7 @@ export function setupMocks() {
 
         // Sonnette : état et flux pour tous, réglages et essai réservés à lan_admin (403 pour lan_user forcé).
         // Tests (sessionStorage) : `essensys_demo_doorbell_init` = JSON {settings, available} ; `essensys_demo_doorbell_status` = JSON
-        // qui remplace l'état renvoyé ; `essensys_demo_doorbell_error` = 403 | 503 | unknown_camera | invalid_blinks sur l'écriture ;
+        // qui remplace l'état renvoyé ; `essensys_demo_doorbell_error` = 403 | 503 | unknown_camera | invalid_blinks | invalid_schedule sur l'écriture ;
         // `essensys_demo_doorbell_cameras` = 503 force l'échec de la liste des caméras ; `essensys_demo_doorbell_absent` = 404.
         const doorbellPath = new URL(url, window.location.origin).pathname;
         if (/^\/api\/(admin\/)?doorbell\//.test(doorbellPath)) {
@@ -294,6 +298,7 @@ export function setupMocks() {
                     ringing,
                     ringing_until: demoDoorbell.ringing_until,
                     last_ring_at: demoDoorbell.last_ring_at,
+                    in_window: isInWindow(demoDoorbell.settings.schedule, Date.now()),
                 });
             }
             if (doorbellPath.startsWith('/api/admin/')) {
@@ -304,7 +309,7 @@ export function setupMocks() {
                     const forced = ss('essensys_demo_doorbell_error');
                     if (forced === '403') return jsonResponse({ error: 'forbidden' }, 403);
                     if (forced === '503') return jsonResponse({ error: 'names_unavailable' }, 503);
-                    if (forced === 'unknown_camera' || forced === 'invalid_blinks') return jsonResponse({ error: forced }, 400);
+                    if (forced === 'unknown_camera' || forced === 'invalid_blinks' || forced === 'invalid_schedule') return jsonResponse({ error: forced }, 400);
                     const body = init?.body ? JSON.parse(String(init.body)) : {};
                     const known = new Set(LIGHT_NAME_CATALOG.map(([id]) => id));
                     if (!Array.isArray(body.lights) || body.lights.some((id: unknown) => typeof id !== 'string' || !known.has(id))) {
@@ -314,6 +319,11 @@ export function setupMocks() {
                         return jsonResponse({ error: 'invalid_blinks' }, 400);
                     }
                     if (body.camera_id && !DEMO_CAMERA_IDS.includes(body.camera_id)) return jsonResponse({ error: 'unknown_camera' }, 400);
+                    // Plage (#61) : absente = conservée ; sinon mêmes contrôles que la passerelle.
+                    if (body.schedule !== undefined && (typeof body.schedule !== 'object' || body.schedule === null || validateSchedule(body.schedule as DoorbellSchedule) !== null)) {
+                        return jsonResponse({ error: 'invalid_schedule' }, 400);
+                    }
+                    if (body.schedule !== undefined) demoDoorbell.settings.schedule = body.schedule as DoorbellSchedule;
                     Object.assign(demoDoorbell.settings, {
                         enabled: body.enabled === true, camera_id: body.camera_id ?? '', lights: body.lights, blinks: body.blinks,
                         version: demoDoorbell.settings.version + 1, updated_at: new Date().toISOString(),

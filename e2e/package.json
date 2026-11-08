@@ -9,7 +9,7 @@
     "test:remote": "playwright test --project=remote-desktop --project=remote-iphone --project=remote-android --project=remote-ipad --project=remote-ecran-domo",
     "test:device": "node scripts/test-device.mjs",
     "test:update-snapshots": "playwright test --update-snapshots",
-    "test:demo": "ESSENSYS_DEMO_BUILD=1 ESSENSYS_LOCAL_URL=http://localhost:4183 playwright test demo.spec.ts security-outlets.spec.ts light-timers.spec.ts light-timers-logic.spec.ts light-names.spec.ts light-names-logic.spec.ts shutter-names.spec.ts shutter-names-logic.spec.ts object-layout.spec.ts object-layout-logic.spec.ts doorbell.spec.ts doorbell-logic.spec.ts --project=local-desktop --project=local-iphone --project=local-ipad"
+    "test:demo": "ESSENSYS_DEMO_BUILD=1 ESSENSYS_LOCAL_URL=http://localhost:4183 playwright test demo.spec.ts security-outlets.spec.ts light-timers.spec.ts light-timers-logic.spec.ts light-names.spec.ts light-names-logic.spec.ts shutter-names.spec.ts shutter-names-logic.spec.ts object-layout.spec.ts object-layout-logic.spec.ts doorbell.spec.ts doorbell-logic.spec.ts doorbell-schedule.spec.ts doorbell-schedule-logic.spec.ts --project=local-desktop --project=local-iphone --project=local-ipad"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0"
