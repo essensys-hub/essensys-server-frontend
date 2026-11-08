@@ -162,7 +162,10 @@ test.describe('sonnette — portail local', () => {
     const writes = await doorbellWrites(page);
     expect(writes).toHaveLength(1);
     expect(writes[0].method).toBe('PUT');
-    expect(writes[0].body).toEqual({ enabled: true, camera_id: 'cam-mock-1', lights: ['salon', 'sam'], blinks: 3 });
+    expect(writes[0].body).toEqual({
+      enabled: true, camera_id: 'cam-mock-1', lights: ['salon', 'sam'], blinks: 3,
+      schedule: { mode: 'always', timezone: 'Europe/Paris', grid: Array(7).fill('1'.repeat(24)) },
+    });
     // Réouverture (navigation interne : la démonstration garde ses réglages en mémoire).
     await spa(page, '/settings');
     await expect(page.getByTestId('doorbell-settings')).toHaveCount(0);

@@ -9,6 +9,7 @@ import {
   selectableLights, shouldShowWindow, toggleLight, validateBlinks,
 } from '../../src/doorbell/doorbell';
 import { DEFAULT_LAYOUT } from '../../src/layout/objectLayout';
+import { DEFAULT_SCHEDULE } from '../../src/doorbell/doorbellSchedule';
 
 const ringing = (over: Record<string, unknown> = {}) =>
   parseStatus({
@@ -64,7 +65,7 @@ test.describe('logique de la sonnette', () => {
     expect(DEFAULT_SETTINGS).toMatchObject({ enabled: false, camera_id: '', lights: [], blinks: 5, version: 0 });
     expect(parseSettings(undefined)).toEqual(DEFAULT_SETTINGS);
     expect(parseSettings({ enabled: true, camera_id: 'cam1', lights: ['salon', 3], blinks: 3, version: 2, updated_at: 'x', updated_by: 'secret' }))
-      .toEqual({ enabled: true, camera_id: 'cam1', lights: ['salon'], blinks: 3, version: 2, updated_at: 'x' });
+      .toEqual({ enabled: true, camera_id: 'cam1', lights: ['salon'], blinks: 3, schedule: DEFAULT_SCHEDULE, version: 2, updated_at: 'x' });
   });
 
   test('@nr NR-server-frontend-11 clignotements : entier de 1 à 10', () => {
@@ -76,7 +77,7 @@ test.describe('logique de la sonnette', () => {
 
   test('@nr NR-server-frontend-11 corps du PUT : quatre champs, sans version ni mention de l auteur', () => {
     expect(buildSettingsWrite({ ...DEFAULT_SETTINGS, enabled: true, camera_id: 'cam1', lights: ['salon', 'sam'], blinks: 3, version: 4 }))
-      .toEqual({ enabled: true, camera_id: 'cam1', lights: ['salon', 'sam'], blinks: 3 });
+      .toEqual({ enabled: true, camera_id: 'cam1', lights: ['salon', 'sam'], blinks: 3, schedule: DEFAULT_SCHEDULE });
   });
 
   test('@nr NR-server-frontend-11 lumières proposées : catalogue, noms personnalisés, masquées (#55) non proposées', () => {

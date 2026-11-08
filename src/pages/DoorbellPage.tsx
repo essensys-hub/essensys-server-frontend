@@ -6,16 +6,14 @@ import { useLightNames } from '../lights/useLightNames';
 import { useObjectLayout } from '../layout/useObjectLayout';
 import type { Camera } from '../services/unifiApi';
 import {
-  DEFAULT_SETTINGS, MAX_BLINKS, MIN_BLINKS, selectableLights, toggleLight, validateBlinks, type DoorbellSettings,
+  DEFAULT_SETTINGS, MAX_BLINKS, MIN_BLINKS, sameDoorbellSettings, selectableLights, toggleLight, validateBlinks, type DoorbellSettings,
 } from '../doorbell/doorbell';
 import {
   getDoorbellCameras, getDoorbellSettings, setDoorbellSettings, testDoorbell,
 } from '../doorbell/doorbellApi';
 import { DOORBELL_REFRESH_EVENT } from '../doorbell/useDoorbellStatus';
-
-const sameSettings = (a: DoorbellSettings, b: DoorbellSettings) =>
-  a.enabled === b.enabled && a.camera_id === b.camera_id && a.blinks === b.blinks
-  && a.lights.length === b.lights.length && a.lights.every((l, i) => l === b.lights[i]);
+import { validateSchedule } from '../doorbell/doorbellSchedule';
+import { ScheduleEditor } from '../components/Doorbell/ScheduleEditor';
 
 export const DoorbellPage: React.FC = () => {
   const canAdmin = useCanAdminLightTimers();
@@ -56,7 +54,8 @@ export const DoorbellPage: React.FC = () => {
 
   const lights = useMemo(() => selectableLights(layout, draft.lights, (id) => nameOf(id)), [layout, draft.lights, nameOf]);
   const blinksError = validateBlinks(draft.blinks);
-  const dirty = !sameSettings(saved, draft);
+  const scheduleError = validateSchedule(draft.schedule);
+  const dirty = !sameDoorbellSettings(saved, draft);
 
   const patch = (p: Partial<DoorbellSettings>) => {
     setDraft((d) => ({ ...d, ...p }));
@@ -186,11 +185,23 @@ export const DoorbellPage: React.FC = () => {
             {blinksError && <p className="mt-2 text-sm text-red-700" data-testid="doorbell-blinks-error">{blinksError}</p>}
           </ControlCard>
 
+          <ControlCard
+            title="Plages horaires"
+            description="Quand la sonnette est active (clignotement des lumières et notification). Hors plage, la vidéo reste affichée dans le portail."
+          >
+            <ScheduleEditor
+              schedule={draft.schedule}
+              onChange={(schedule) => patch({ schedule })}
+              disabled={busy}
+              canEdit={canAdmin}
+            />
+          </ControlCard>
+
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => void save()}
-              disabled={busy || !dirty || blinksError !== null}
+              disabled={busy || !dirty || blinksError !== null || scheduleError !== null}
               className="px-3 py-1.5 text-sm rounded bg-essensys-primary text-white disabled:opacity-50"
             >
               Enregistrer
