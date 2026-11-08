@@ -20,6 +20,7 @@ import {
   LanUsersAdminPage,
   AuditTrailPage,
   KitchenShutterTestConsolePage,
+  DoorbellPage,
 } from './pages';
 import { LanAuthGate } from './components/LanAuthGate';
 import { DashboardProvider } from './context/DashboardContext';
@@ -59,6 +60,7 @@ function App() {
                 <Route path="/settings/account" element={<AccountSettingsPage />} />
                 <Route path="/settings/users" element={<LanUsersAdminPage />} />
                 <Route path="/settings/audit" element={<AuditTrailPage />} />
+                <Route path="/settings/doorbell" element={<DoorbellPage />} />
                 <Route path="/admin/regression" element={<RegressionTestPage />} />
                 <Route path="/admin/kitchen-shutter-test" element={<KitchenShutterTestConsolePage />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />

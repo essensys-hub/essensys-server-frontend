@@ -9,6 +9,7 @@ const DANGEROUS_PATHS = [
   /\/api\/scenarios\/[^/]+\/launch(?:\?|$|\/)/i,
   /\/api\/scenarios\/launch(?:\?|$|\/)/i,
   /\/api\/(?:admin|portal\/admin)\/lights\/timers\//i,
+  /\/api\/admin\/doorbell\/test(?:\?|$|\/)/i,
 ];
 
 function hasDryRun(request: Request): boolean {
